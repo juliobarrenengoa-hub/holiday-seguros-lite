@@ -24,15 +24,13 @@
   });
 
   function initConfigCheck() {
+    // Si hay una URL guardada en localStorage (modo dev), tiene prioridad
     var savedUrl = localStorage.getItem('hsl_api_url') || '';
     if (savedUrl) {
       api.setBaseUrl(savedUrl);
     }
-
-    if (!api.getBaseUrl()) {
-      showConfig();
-      return;
-    }
+    // api.js ya tiene la URL hardcodeada como valor por defecto,
+    // así que getBaseUrl() nunca estará vacío en producción.
 
     if (session.isActive()) {
       api.checkSession(session.token()).then(function (res) {

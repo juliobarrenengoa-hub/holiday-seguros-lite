@@ -3,8 +3,9 @@
  * Todas las llamadas pasan por api.call() que gestiona el redirect de Apps Script.
  */
 var api = (function () {
-  // IMPORTANTE: Reemplazar con la URL del deploy de Apps Script
-  var BASE_URL = '';
+  // URL del deploy de Apps Script — hardcodeada en producción.
+  // Se puede sobreescribir via localStorage('hsl_api_url') para desarrollo.
+  var BASE_URL = 'https://script.google.com/macros/s/AKfycbwS2741OEpJfaM8pbcNcvC8m5SRdmk_GprWPRqwJOhxrjUGHFktu6ykcwO-AbAM0i_R/exec';
 
   function setBaseUrl(url) {
     BASE_URL = url.replace(/\/+$/, '');

@@ -1,4 +1,4 @@
-var CACHE_NAME = 'hsl-v1';
+var CACHE_NAME = 'hsl-v3';
 var ASSETS = [
   './',
   './index.html',

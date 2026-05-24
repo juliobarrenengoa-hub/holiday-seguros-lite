@@ -21,8 +21,7 @@ var api = (function () {
 
     return fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(body || {}),
+      body: new URLSearchParams({ data: JSON.stringify(body || {}) }),
       redirect: 'follow'
     })
     .then(function (resp) {

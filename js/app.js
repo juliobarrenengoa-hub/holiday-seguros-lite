@@ -116,6 +116,17 @@
     utils.setMsg('login-msg', 'El login con Google solo funciona dentro de Apps Script. Usa usuario y contraseña.', 'error');
   };
 
+  window.exitApp = function () {
+    window.close();
+    // Fallback si el navegador no permite cerrar la pestaña
+    setTimeout(function () {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;font-family:sans-serif;color:#607d8b;">'
+        + '<span style="font-size:2.5rem">✓</span>'
+        + '<p style="margin:0;font-size:1rem">Puedes cerrar esta pestaña.</p>'
+        + '</div>';
+    }, 300);
+  };
+
   window.toggleLoginPass = function () {
     var input = $('login-pass');
     var icon = $('login-eye');
@@ -176,9 +187,70 @@
   function showApp() {
     hideAll();
     utils.show('app-shell');
-    $('nav-user').textContent = session.usuario();
+    $('nav-user').textContent = '👤 ' + session.usuario();
     navigateTo('inicio');
   }
+
+  // ─── User dropdown ────────────────────────────────────────────────────
+
+  window.toggleUserMenu = function () {
+    $('user-dropdown').classList.toggle('hidden');
+  };
+
+  document.addEventListener('click', function (e) {
+    var wrap = $('user-menu-wrap');
+    var dd = $('user-dropdown');
+    if (dd && wrap && !wrap.contains(e.target)) {
+      dd.classList.add('hidden');
+    }
+  });
+
+  // ─── Modal: cambio password desde la app ─────────────────────────────
+
+  window.openCambioPasswordApp = function () {
+    $('user-dropdown').classList.add('hidden');
+    $('modal-new-pass').value = '';
+    $('modal-repeat-pass').value = '';
+    utils.setMsg('modal-cambio-msg', '', '');
+    $('modal-cambio-pass').classList.remove('hidden');
+    setTimeout(function () { $('modal-new-pass').focus(); }, 50);
+  };
+
+  window.closeModalCambioPassword = function () {
+    $('modal-cambio-pass').classList.add('hidden');
+  };
+
+  window.doModalCambioPassword = function () {
+    var p1 = $('modal-new-pass').value;
+    var p2 = $('modal-repeat-pass').value;
+    if (!p1 || !p2) { utils.setMsg('modal-cambio-msg', 'Introduce y repite la contraseña.', 'error'); return; }
+    if (p1 !== p2) { utils.setMsg('modal-cambio-msg', 'Las contraseñas no coinciden.', 'error'); return; }
+
+    setBtnProcessing('btn-modal-cambio', 'Guardando...');
+    api.cambiarPassword(session.token(), p1, p2).then(function (res) {
+      restoreBtn('btn-modal-cambio');
+      if (res.success) {
+        utils.setMsg('modal-cambio-msg', '✓ Contraseña actualizada correctamente.', 'ok');
+        setTimeout(closeModalCambioPassword, 1400);
+      } else {
+        utils.setMsg('modal-cambio-msg', res.msg || 'Error al guardar.', 'error');
+      }
+    }).catch(function (err) {
+      restoreBtn('btn-modal-cambio');
+      utils.setMsg('modal-cambio-msg', 'Error: ' + err.message, 'error');
+    });
+  };
+
+  window.toggleModalPass = function (inputId, btn) {
+    var input = $(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
+    }
+  };
 
   function hideAll() {
     ['view-config', 'view-login', 'view-cambio-pass', 'app-shell'].forEach(function (id) {

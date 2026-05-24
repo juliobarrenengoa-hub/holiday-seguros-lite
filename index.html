@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Holiday Seguros">
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png">
   <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
   <link rel="apple-touch-icon" href="img/icon-192.png">
   <link rel="stylesheet" href="css/app.css">
@@ -40,8 +41,11 @@
 <div id="view-login" class="hidden">
   <div class="login-wrapper">
     <div class="login-card">
+      <div class="login-logo">
+        <img src="img/icon-192.png" alt="Holiday Seguros">
+      </div>
       <div class="title">HOLIDAY SEGUROS</div>
-      <div class="subtitle">Panel de Gestión</div>
+      <div class="subtitle">Login</div>
 
       <div class="input-group">
         <label for="login-user">Usuario</label>
@@ -66,6 +70,10 @@
       </button>
 
       <div id="login-msg" class="msg"></div>
+
+      <div class="login-exit-wrap">
+        <button class="btn-exit-app" onclick="exitApp()">✕ Salir</button>
+      </div>
     </div>
   </div>
 </div>
@@ -107,8 +115,14 @@
       <button data-view="catalogo" onclick="navigateTo('catalogo')">Catálogos</button>
     </div>
     <div class="nav-right">
-      <span id="nav-user" class="user-badge"></span>
-      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+      <div class="user-menu-wrap" id="user-menu-wrap">
+        <button id="nav-user" class="user-badge" onclick="toggleUserMenu()"></button>
+        <div id="user-dropdown" class="user-dropdown hidden">
+          <button onclick="openCambioPasswordApp()">🔑 Cambiar contraseña</button>
+          <hr class="dropdown-sep">
+          <button onclick="doLogout()">⬡ Cerrar sesión</button>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -387,6 +401,33 @@
     </div>
 
   </div><!-- /app-container -->
+
+  <!-- Modal: cambio de contraseña desde la app -->
+  <div id="modal-cambio-pass" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-title">🔑 Cambiar contraseña</div>
+      <div class="input-group">
+        <label>Nueva contraseña</label>
+        <div class="password-wrapper">
+          <input id="modal-new-pass" type="password" autocomplete="new-password" placeholder="Nueva contraseña">
+          <button type="button" class="toggle-pass" onclick="toggleModalPass('modal-new-pass',this)">👁️</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Repetir contraseña</label>
+        <div class="password-wrapper">
+          <input id="modal-repeat-pass" type="password" autocomplete="new-password" placeholder="Repetir contraseña">
+          <button type="button" class="toggle-pass" onclick="toggleModalPass('modal-repeat-pass',this)">👁️</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-modal-cambio" class="btn btn-primary" onclick="doModalCambioPassword()">Guardar</button>
+        <button class="btn btn-outline" onclick="closeModalCambioPassword()">Cancelar</button>
+      </div>
+      <div id="modal-cambio-msg" class="msg"></div>
+    </div>
+  </div>
+
 </div><!-- /app-shell -->
 
 <!-- Scripts -->

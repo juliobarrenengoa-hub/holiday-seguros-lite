@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Holiday Seguros Lite</title>
+  <meta name="description" content="Gestión de seguros - Holiday Seguros Lite">
+  <meta name="theme-color" content="#1565c0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Holiday Seguros">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+  <link rel="apple-touch-icon" href="img/icon-192.png">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ═══ CONFIG ═══════════════════════════════════════════════════════════ -->
+<div id="view-config" class="hidden">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="title">Holiday Seguros Lite</div>
+      <div class="subtitle">Configuración inicial</div>
+      <div class="info-box">
+        Introduce la URL del deploy de tu Apps Script.<br>
+        Es la URL que obtienes al hacer <strong>Deploy &gt; Web app</strong> en el editor de Apps Script.
+      </div>
+      <div class="input-group">
+        <label for="config-url">URL del Web App</label>
+        <input id="config-url" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveConfig()">Guardar y conectar</button>
+      <div id="config-msg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ════════════════════════════════════════════════════════════ -->
+<div id="view-login" class="hidden">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="title">HOLIDAY SEGUROS</div>
+      <div class="subtitle">Panel de Gestión</div>
+
+      <div class="input-group">
+        <label for="login-user">Usuario</label>
+        <input id="login-user" type="text" autocomplete="username" placeholder="Tu usuario">
+      </div>
+
+      <div class="input-group">
+        <label for="login-pass">Contraseña</label>
+        <div class="password-wrapper">
+          <input id="login-pass" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+          <button id="login-eye" type="button" class="toggle-pass" onclick="toggleLoginPass()">👁️</button>
+        </div>
+      </div>
+
+      <button id="btn-login" class="btn btn-primary btn-block" onclick="doLogin()">Entrar</button>
+
+      <div class="divider-text">o</div>
+
+      <button class="btn btn-google btn-block" onclick="doLoginGoogle()">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Entrar con Google
+      </button>
+
+      <div id="login-msg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CAMBIO PASSWORD ══════════════════════════════════════════════════ -->
+<div id="view-cambio-pass" class="hidden">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="title">Cambiar contraseña</div>
+      <div class="info-box">Por seguridad, debes cambiar la contraseña provisional antes de entrar.</div>
+
+      <div class="input-group">
+        <label for="new-pass">Nueva contraseña</label>
+        <input id="new-pass" type="password" autocomplete="new-password">
+      </div>
+      <div class="input-group">
+        <label for="repeat-pass">Repetir contraseña</label>
+        <input id="repeat-pass" type="password" autocomplete="new-password">
+      </div>
+
+      <button id="btn-cambio" class="btn btn-primary btn-block" onclick="doCambioPassword()">Guardar nueva contraseña</button>
+      <button class="btn btn-outline btn-block" onclick="cancelCambio()" style="margin-top:8px">Cancelar</button>
+      <div id="cambio-msg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ════════════════════════════════════════════════════════ -->
+<div id="app-shell" class="hidden">
+
+  <!-- NAV -->
+  <nav class="app-nav">
+    <span class="brand">Holiday Seguros</span>
+    <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+    <div class="nav-links">
+      <button data-view="inicio" onclick="navigateTo('inicio')">Inicio</button>
+      <button data-view="dashboard" onclick="navigateTo('dashboard')">Dashboard</button>
+      <button data-view="gestion" onclick="navigateTo('gestion')">Gestión</button>
+      <button data-view="catalogo" onclick="navigateTo('catalogo')">Catálogos</button>
+    </div>
+    <div class="nav-right">
+      <span id="nav-user" class="user-badge"></span>
+      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="app-container">
+
+    <!-- ─── INICIO ─────────────────────────────────────────────────────── -->
+    <div id="view-inicio" class="app-view">
+      <div class="menu-grid">
+        <button class="menu-btn" onclick="goAltaNueva()">
+          <span class="icon">📋</span>
+          <span class="label">Alta nueva</span>
+        </button>
+        <button class="menu-btn" onclick="navigateTo('gestion')">
+          <span class="icon">📂</span>
+          <span class="label">Gestión</span>
+        </button>
+        <button class="menu-btn" onclick="navigateTo('dashboard')">
+          <span class="icon">📊</span>
+          <span class="label">Dashboard</span>
+        </button>
+        <button class="menu-btn" onclick="navigateTo('catalogo')">
+          <span class="icon">📚</span>
+          <span class="label">Catálogos</span>
+        </button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">🔍 Búsqueda rápida</h2>
+        <div class="search-bar">
+          <input id="txt-buscar" type="text" placeholder="Nombre, DNI/CIF, matrícula, póliza, compañía, ramo..." oninput="onSearchInput()">
+        </div>
+        <div id="search-status" class="status-text"></div>
+
+        <div id="resultados-inicio" class="hidden">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>DNI/CIF</th>
+                  <th>Póliza</th>
+                  <th>Ramo</th>
+                  <th>Compañía</th>
+                  <th>Vencimiento</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-resultados"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── DASHBOARD ──────────────────────────────────────────────────── -->
+    <div id="view-dashboard" class="app-view">
+      <h2 class="section-title">📊 Dashboard</h2>
+      <div id="dash-status" class="status-text"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div id="kpi-total" class="kpi-value">-</div><div class="kpi-label">Total pólizas</div></div>
+        <div class="kpi-card"><div id="kpi-prima" class="kpi-value">-</div><div class="kpi-label">Prima total</div></div>
+        <div class="kpi-card"><div id="kpi-corredor" class="kpi-value">-</div><div class="kpi-label">Com. corredor</div></div>
+        <div class="kpi-card"><div id="kpi-agente" class="kpi-value">-</div><div class="kpi-label">Com. agente</div></div>
+        <div class="kpi-card danger"><div id="kpi-vencidas" class="kpi-value">-</div><div class="kpi-label">Vencidas</div></div>
+        <div class="kpi-card warning"><div id="kpi-vencen30" class="kpi-value">-</div><div class="kpi-label">Vencen 30 días</div></div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card"><h4>Pólizas por ramo</h4><div id="chart-ramo"></div></div>
+        <div class="chart-card"><h4>Prima por ramo</h4><div id="chart-ramo-prima"></div></div>
+        <div class="chart-card"><h4>Pólizas por compañía</h4><div id="chart-cia"></div></div>
+        <div class="chart-card"><h4>Prima por compañía</h4><div id="chart-cia-prima"></div></div>
+        <div class="chart-card"><h4>Vencimientos por mes</h4><div id="chart-venc-mes"></div></div>
+        <div class="chart-card"><h4>Pólizas por mes (alta)</h4><div id="chart-pol-mes"></div></div>
+        <div class="chart-card"><h4>Primas por mes</h4><div id="chart-prima-mes"></div></div>
+      </div>
+    </div>
+
+    <!-- ─── GESTIÓN ────────────────────────────────────────────────────── -->
+    <div id="view-gestion" class="app-view">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <h2 class="section-title" style="margin:0">📂 Gestión de pólizas</h2>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-small" onclick="goAltaNueva()">+ Alta nueva</button>
+          <button class="btn btn-outline btn-small" onclick="exportarExcel()">Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <input id="gestion-buscar" type="text" placeholder="Buscar en registros..." oninput="onGestionSearch()">
+      </div>
+
+      <div id="gestion-status" class="status-text"></div>
+
+      <div id="gestion-results" class="hidden">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>DNI/CIF</th>
+                <th>Póliza</th>
+                <th>Ramo</th>
+                <th>Compañía</th>
+                <th>Matrícula</th>
+                <th style="text-align:right">Prima</th>
+                <th>Vencimiento</th>
+              </tr>
+            </thead>
+            <tbody id="gestion-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span id="gestion-info" class="page-info"></span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <select id="gestion-page-size" onchange="onGestionPageSize()">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <div id="gestion-pages" class="page-buttons"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FORMULARIO ─────────────────────────────────────────────────── -->
+    <div id="view-formulario" class="app-view">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+          <div>
+            <h2 id="form-title" class="card-title" style="margin:0">Nueva póliza</h2>
+            <span id="form-mode" class="status-text">Modo alta nueva</span>
+          </div>
+          <button class="btn btn-outline btn-small" onclick="navigateTo('inicio')">← Volver</button>
+        </div>
+
+        <form id="formPoliza" onsubmit="event.preventDefault()">
+          <input type="hidden" id="f-fila">
+          <input type="hidden" id="f-url-drive">
+
+          <div class="form-grid">
+            <!-- Identificación -->
+            <div class="form-section-title">Identificación</div>
+            <div class="form-row-4">
+              <div class="form-field">
+                <label>Tipo cliente</label>
+                <select id="f-tipo-cliente">
+                  <option value="Particular">Particular</option>
+                  <option value="Empresa">Empresa</option>
+                  <option value="Autónomo">Autónomo</option>
+                </select>
+              </div>
+              <div class="form-field"><label>DNI / CIF *</label><input id="f-dni" type="text" maxlength="15" required></div>
+              <div class="form-field"><label>Nombre *</label><input id="f-nombre" type="text" maxlength="50" required></div>
+              <div class="form-field"><label>Apellido 1</label><input id="f-ape1" type="text" maxlength="30"></div>
+            </div>
+            <div class="form-row-4">
+              <div class="form-field"><label>Apellido 2</label><input id="f-ape2" type="text" maxlength="30"></div>
+              <div class="form-field"><label>Teléfono</label><input id="f-telefono" type="text" maxlength="30"></div>
+              <div class="form-field"><label>Email</label><input id="f-email" type="email" maxlength="80"></div>
+              <div></div>
+            </div>
+
+            <!-- Ubicación -->
+            <div class="form-section-title">Ubicación</div>
+            <div class="form-row-4">
+              <div class="form-field"><label>Domicilio</label><input id="f-domicilio" type="text" maxlength="80"></div>
+              <div class="form-field"><label>Número</label><input id="f-numero" type="text" maxlength="10"></div>
+              <div class="form-field"><label>Población</label><input id="f-poblacion" type="text" maxlength="50"></div>
+              <div class="form-field"><label>C.P.</label><input id="f-cp" type="text" maxlength="5" oninput="onCpChange()"></div>
+            </div>
+            <div class="form-row-4">
+              <div class="form-field"><label>Provincia</label><input id="f-provincia" type="text" maxlength="40"></div>
+              <div></div><div></div><div></div>
+            </div>
+
+            <!-- Seguro -->
+            <div class="form-section-title">Datos del seguro</div>
+            <div class="form-row-4">
+              <div class="form-field"><label>Nº Póliza *</label><input id="f-n-poliza" type="text" maxlength="30" required></div>
+              <div class="form-field"><label>Fecha póliza</label><input id="f-fecha-pol" type="date"></div>
+              <div class="form-field"><label>Ramo *</label><select id="f-ramo" required><option value="">- Seleccionar -</option></select></div>
+              <div class="form-field"><label>Compañía *</label><select id="f-cia" required><option value="">- Seleccionar -</option></select></div>
+            </div>
+            <div class="form-row-4">
+              <div class="form-field"><label>Matrícula</label><input id="f-matricula" type="text" maxlength="15"></div>
+              <div class="form-field"><label>Prima *</label><input id="f-prima" type="text" maxlength="15" required></div>
+              <div class="form-field"><label>Com. corredor</label><input id="f-c-corredor" type="text" maxlength="15"></div>
+              <div class="form-field"><label>Com. agente</label><input id="f-c-agente" type="text" maxlength="15"></div>
+            </div>
+            <div class="form-row-4">
+              <div class="form-field"><label>Vencimiento *</label><input id="f-vencimiento" type="date" required></div>
+              <div></div><div></div><div></div>
+            </div>
+
+            <!-- Archivos (solo alta nueva) -->
+            <div class="form-section-title">Documentación</div>
+            <div class="form-field">
+              <label>Adjuntar archivos (solo en alta nueva)</label>
+              <input id="f-archivos" type="file" multiple style="padding:8px 0">
+            </div>
+          </div>
+
+          <div id="form-msg" class="msg" style="margin-top:16px"></div>
+
+          <div class="btn-group" style="margin-top:20px">
+            <button id="btn-guardar" type="button" class="btn btn-primary" onclick="guardarPoliza()">Guardar</button>
+            <button id="btn-baja" type="button" class="btn btn-danger hidden" onclick="darBaja()">Dar de baja</button>
+            <button id="btn-docs" type="button" class="btn btn-outline hidden" onclick="verDocumentos()">Documentos</button>
+            <button type="button" class="btn btn-outline" onclick="limpiarFormulario()">Limpiar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ─── DOCUMENTOS ─────────────────────────────────────────────────── -->
+    <div id="view-documentos" class="app-view">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+          <h2 class="card-title" style="margin:0">📁 Expediente documental</h2>
+          <button class="btn btn-outline btn-small" onclick="volverDesdeDocumentos()">← Volver a ficha</button>
+        </div>
+
+        <input type="hidden" id="docs-url">
+
+        <div style="margin-bottom:16px">
+          <input id="docs-file-input" type="file" multiple style="margin-right:8px">
+          <button class="btn btn-primary btn-small" onclick="subirDocs()">Subir archivos</button>
+        </div>
+
+        <div id="docs-status" class="status-text"></div>
+        <div id="docs-list"></div>
+      </div>
+    </div>
+
+    <!-- ─── CATÁLOGOS ──────────────────────────────────────────────────── -->
+    <div id="view-catalogo" class="app-view">
+      <h2 class="section-title">📚 Catálogos</h2>
+
+      <div class="catalogo-grid">
+        <!-- Ramos -->
+        <div class="card">
+          <h3 class="card-title">Ramos</h3>
+          <div class="catalogo-input-row">
+            <input id="cat-ramo-input" type="text" placeholder="Nuevo ramo...">
+            <button class="btn btn-primary btn-small" onclick="guardarCatalogoRamo()">Añadir</button>
+          </div>
+          <div id="cat-ramo-msg" class="msg"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nombre</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="cat-ramo-tabla"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Compañías -->
+        <div class="card">
+          <h3 class="card-title">Compañías</h3>
+          <div class="catalogo-input-row">
+            <input id="cat-cia-input" type="text" placeholder="Nueva compañía...">
+            <button class="btn btn-primary btn-small" onclick="guardarCatalogoCia()">Añadir</button>
+          </div>
+          <div id="cat-cia-msg" class="msg"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nombre</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="cat-cia-tabla"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-container -->
+</div><!-- /app-shell -->
+
+<!-- Scripts -->
+<script src="js/utils.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+
+<!-- PWA Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
+
+</body>
+</html>

@@ -32,6 +32,47 @@
     // api.js ya tiene la URL hardcodeada como valor por defecto,
     // así que getBaseUrl() nunca estará vacío en producción.
 
+    // ── Google Auth redirect callback ─────────────────────────────────────
+    // El popup de Google login redirige de vuelta a la SPA con ?gauth=1&token=...
+    // Detectamos ese parámetro aquí antes de cualquier otra lógica.
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('gauth')) {
+      var gauthOk = urlParams.get('gauth') === '1';
+      var gToken  = urlParams.get('token') || '';
+      var gNombre = urlParams.get('nombre') || '';
+      var gMsg    = urlParams.get('msg') || 'Error en autenticación con Google.';
+
+      // Limpiar los parámetros de la URL (no añadir al historial)
+      window.history.replaceState({}, '', window.location.pathname);
+
+      if (window.opener && !window.opener.closed) {
+        // Estamos en el popup: enviar resultado al padre y cerrar
+        try {
+          window.opener.postMessage(
+            gauthOk
+              ? { hslGauth: true, success: true, token: gToken, nombre: gNombre }
+              : { hslGauth: true, success: false, msg: gMsg },
+            window.location.origin
+          );
+        } catch (e) { /* cross-origin fallback no aplica aquí */ }
+        setTimeout(function () { window.close(); }, 200);
+        return; // No continuar con el resto del init
+      } else if (gauthOk && gToken && gNombre) {
+        // No hay opener (tab directa o popup ya cerrado): iniciar sesión directamente
+        session.save(gToken, gNombre);
+        showApp();
+        return;
+      } else {
+        // Error sin opener: mostrar login con mensaje
+        showLogin();
+        setTimeout(function () {
+          utils.setMsg('login-msg', gMsg, 'error');
+        }, 100);
+        return;
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     if (session.isActive()) {
       api.checkSession(session.token()).then(function (res) {
         if (res.success) {
@@ -133,12 +174,13 @@
     utils.setMsg('login-msg', '⌛ Esperando autenticación de Google...', 'ok');
 
     var handler = function (event) {
-      // Aceptar mensajes de dominios de Google
-      if (!event.origin.includes('google.com') && !event.origin.includes('googleusercontent.com')) return;
+      // Solo aceptar mensajes del mismo origen (la SPA redirige el popup de vuelta a sí misma)
+      if (event.origin !== window.location.origin) return;
+      var data = event.data || {};
+      if (!data.hslGauth) return; // Ignorar mensajes no relacionados con el login
       window.removeEventListener('message', handler);
       clearTimeout(timeout);
 
-      var data = event.data || {};
       if (data.success) {
         session.save(data.token, data.nombre);
         utils.setMsg('login-msg', '', '');

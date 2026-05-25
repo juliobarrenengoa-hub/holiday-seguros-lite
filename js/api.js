@@ -100,6 +100,10 @@ var api = (function () {
     return call('poblarCatalogosPorDefecto', { token: token });
   }
 
+  function listarAgentes(token) {
+    return call('listarAgentes', { token: token });
+  }
+
   function dashboard(token, agente) {
     return call('dashboard', { token: token, agente: agente || '' });
   }
@@ -147,6 +151,7 @@ var api = (function () {
     bajaCatalogo: bajaCatalogo,
     poblarCatalogosPorDefecto: poblarCatalogosPorDefecto,
     dashboard: dashboard,
+    listarAgentes: listarAgentes,
     listarArchivos: listarArchivos,
     subirArchivos: subirArchivos,
     eliminarArchivo: eliminarArchivo

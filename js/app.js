@@ -736,11 +736,28 @@
   var dashAgenteActual = '';   // '' = todos
 
   function initDashboard() {
-    // Al entrar al dashboard siempre arranca en "Todos" (sin resetear el select si ya hay datos)
     dashAgenteActual = '';
     var sel = $('dash-agente-select');
     if (sel) sel.value = '';
     _actualizarBadgeAgente('');
+
+    // Cargar la lista de agentes de forma independiente para que el select
+    // se rellene aunque falle la carga de KPIs (o viceversa).
+    api.listarAgentes(session.token()).then(function (res) {
+      if (!res.success || !res.agentes || !res.agentes.length) return;
+      var s = $('dash-agente-select');
+      if (!s) return;
+      var current = s.value;
+      s.innerHTML = '<option value="">— Todos —</option>';
+      res.agentes.forEach(function (ag) {
+        var opt = document.createElement('option');
+        opt.value = ag;
+        opt.textContent = ag;
+        if (ag === current) opt.selected = true;
+        s.appendChild(opt);
+      });
+    }).catch(function () { /* si falla no bloqueamos el dashboard */ });
+
     _cargarDashboard('');
   }
 
@@ -749,7 +766,7 @@
     api.dashboard(session.token(), agente).then(function (res) {
       if (!res.success) { handleSessionError(res); $('dash-status').textContent = res.msg || 'Error.'; return; }
       $('dash-status').textContent = '';
-      renderDashboard(res, agente === '');
+      renderDashboard(res);
     }).catch(function (err) {
       $('dash-status').textContent = 'Error: ' + err.message;
     });
@@ -787,7 +804,7 @@
     }
   }
 
-  function renderDashboard(res, esTotal) {
+  function renderDashboard(res) {
     var k = res.kpis;
     $('kpi-total').textContent = utils.formatNumero(k.totalPolizas);
     $('kpi-prima').textContent = utils.formatImporte(k.primaTotal);
@@ -795,22 +812,6 @@
     $('kpi-agente').textContent = utils.formatImporte(k.comisionAgente);
     $('kpi-vencidas').textContent = utils.formatNumero(k.vencidas);
     $('kpi-vencen30').textContent = utils.formatNumero(k.vencen30);
-
-    // Poblar select de agentes solo la primera carga (para no perder la selección activa)
-    if (esTotal && res.agentes && res.agentes.length) {
-      var sel = $('dash-agente-select');
-      if (sel) {
-        var current = sel.value;
-        sel.innerHTML = '<option value="">— Todos —</option>';
-        res.agentes.forEach(function (ag) {
-          var opt = document.createElement('option');
-          opt.value = ag;
-          opt.textContent = ag;
-          if (ag === current) opt.selected = true;
-          sel.appendChild(opt);
-        });
-      }
-    }
 
     renderBarChart('chart-ramo',      res.porRamo,           'polizas', utils.formatNumero);
     renderBarChart('chart-cia',        res.porCompania,       'polizas', utils.formatNumero);

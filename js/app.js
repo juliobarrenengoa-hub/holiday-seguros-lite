@@ -44,7 +44,6 @@
   var gestionColsVisible = null;          // array de keys en orden de visualización
   var gestionSort = { key: null, dir: 0 }; // dir: 0=sin orden, 1=asc, -1=desc
   var gestionFiltrosFecha = [];           // [{campo, label, desde, hasta}]
-  var searchTimer = null;
   var gestionSearchTimer = null;
   var polizaActual = null;
 
@@ -405,59 +404,10 @@
     if (links) links.classList.remove('open');
   }
 
-  // ─── Inicio (búsqueda rápida + menú) ─────────────────────────────────
+  // ─── Inicio ───────────────────────────────────────────────────────────
 
   function initInicio() {
-    $('txt-buscar').value = '';
-    $('tabla-resultados').innerHTML = '';
-    utils.hide('resultados-inicio');
-    $('search-status').textContent = '';
-  }
-
-  window.onSearchInput = function () {
-    clearTimeout(searchTimer);
-    var val = $('txt-buscar').value.trim();
-    if (val.length < 3) {
-      utils.hide('resultados-inicio');
-      $('search-status').textContent = val.length > 0 ? 'Escribe al menos 3 caracteres...' : '';
-      return;
-    }
-    $('search-status').textContent = 'Buscando...';
-    searchTimer = setTimeout(function () { doBuscar(val); }, 400);
-  };
-
-  function doBuscar(valor) {
-    api.buscar(session.token(), valor).then(function (res) {
-      if (!res.success) {
-        handleSessionError(res);
-        return;
-      }
-      var items = res.resultados || [];
-      $('search-status').textContent = items.length ? items.length + ' resultado(s)' : 'Sin resultados.';
-      renderResultados(items);
-    }).catch(function (err) {
-      $('search-status').textContent = 'Error: ' + err.message;
-    });
-  }
-
-  function renderResultados(items) {
-    var tbody = $('tabla-resultados');
-    tbody.innerHTML = '';
-    if (!items.length) { utils.hide('resultados-inicio'); return; }
-
-    utils.show('resultados-inicio');
-    items.forEach(function (r) {
-      var tr = document.createElement('tr');
-      tr.className = 'clickable';
-      tr.innerHTML = '<td>' + escapeHtml(r.nombre_completo) + '</td>'
-        + '<td>' + escapeHtml(r.dni_cif) + '</td>'
-        + '<td>' + escapeHtml(r.n_poliza) + '</td>'
-        + '<td>' + escapeHtml(r.ramo) + '</td>'
-        + '<td>' + escapeHtml(r.cia) + '</td>'
-        + '<td>' + escapeHtml(r.vencimiento) + '</td>';
-      tr.addEventListener('click', function () { abrirFicha(r); });
-      tbody.appendChild(tr);
-    });
+    // Nada que inicializar (búsqueda rápida eliminada; usar Gestión).
   }
 
   window.goAltaNueva = function () {
@@ -1493,8 +1443,8 @@
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>' + escapeHtml(item.nombre) + '</td>'
         + '<td><span class="badge-activo ' + (item.activo ? 'si' : 'no') + '">' + (item.activo ? 'Activo' : 'Inactivo') + '</span></td>'
-        + '<td>' + (item.activo ? '<button class="btn btn-small btn-danger">Baja</button>' : '') + '</td>';
-      var bajaBtn = tr.querySelector('.btn-danger');
+        + '<td>' + (item.activo ? '<button class="btn-trash" title="Dar de baja">🗑️</button>' : '') + '</td>';
+      var bajaBtn = tr.querySelector('.btn-trash');
       if (bajaBtn) {
         bajaBtn.addEventListener('click', function () {
           bajaCatalogoItem(tipo, item.id, item.nombre);

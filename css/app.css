@@ -452,6 +452,22 @@ body {
 
 .btn-small { padding: 6px 14px; font-size: 0.82rem; }
 
+.btn-trash {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  opacity: 0.45;
+  transition: opacity 0.2s, background 0.2s;
+}
+.btn-trash:hover {
+  opacity: 1;
+  background: rgba(198,40,40,0.10);
+}
+
 .btn:disabled, .btn.processing {
   opacity: 0.6;
   pointer-events: none;

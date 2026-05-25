@@ -434,12 +434,6 @@ body {
 
 .btn-block { width: 100%; }
 
-.btn-google {
-  background: #fff;
-  color: #333;
-  border: 1px solid #ddd;
-}
-.btn-google:hover { background: #f7f7f7; }
 
 .btn-outline {
   background: transparent;
@@ -943,22 +937,6 @@ table tbody tr.clickable {
   margin-bottom: 16px;
 }
 
-.divider-text {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-faint);
-  font-size: 0.86rem;
-  margin: 18px 0 10px;
-}
-
-.divider-text::before,
-.divider-text::after {
-  content: '';
-  height: 1px;
-  background: var(--border);
-  flex: 1;
-}
 
 /* ─── STATUS BAR ─────────────────────────────────────────────────────────── */
 

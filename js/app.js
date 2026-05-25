@@ -535,7 +535,14 @@
       if (res.success) {
         utils.setMsg('form-msg', res.msg, 'ok');
         if (res.urlDrive) $('f-url-drive').value = res.urlDrive;
-        if (!fila && res.urlDrive) {
+        if (!fila && res.fila) {
+          // Primera vez que se guarda: cambiar a modo edición para
+          // que pulsaciones adicionales actualicen la misma fila
+          // en lugar de crear un registro duplicado.
+          $('f-fila').value = res.fila;
+          $('form-title').textContent = 'Editar póliza';
+          $('form-mode').textContent = 'Editando registro existente';
+          utils.show('btn-baja');
           utils.show('btn-docs');
         }
       } else {

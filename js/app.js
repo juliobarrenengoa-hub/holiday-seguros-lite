@@ -8,19 +8,14 @@
 
   // ─── Columnas disponibles en gestión ────────────────────────────────────
 
+  // Orden canónico = orden de columnas en DATOS_POLIZAS del GSheet.
+  // Este array es la fuente de verdad para el panel de selección y el orden por defecto.
   var TODAS_COLUMNAS = [
-    { key: 'nombre_completo', label: 'Nombre',        defaultOn: true  },
-    { key: 'dni_cif',         label: 'DNI/CIF',       defaultOn: true  },
-    { key: 'n_poliza',        label: 'Nº Póliza',     defaultOn: true  },
-    { key: 'ramo',            label: 'Ramo',          defaultOn: true  },
-    { key: 'cia',             label: 'Compañía',      defaultOn: true  },
-    { key: 'matricula',       label: 'Matrícula',     defaultOn: true  },
-    { key: 'prima',           label: 'Prima',         defaultOn: true,  align: 'right' },
-    { key: 'vencimiento',     label: 'Vencimiento',   defaultOn: true  },
     { key: 'fecha_alta',      label: 'Fecha alta',    defaultOn: false },
-    { key: 'f_pol',           label: 'F. póliza',     defaultOn: false },
     { key: 'agente',          label: 'Agente',        defaultOn: false },
     { key: 'tipo',            label: 'Tipo',          defaultOn: false },
+    { key: 'dni_cif',         label: 'DNI/CIF',       defaultOn: true  },
+    { key: 'nombre_completo', label: 'Nombre',        defaultOn: true  },
     { key: 'telefono',        label: 'Teléfono',      defaultOn: false },
     { key: 'email',           label: 'Email',         defaultOn: false },
     { key: 'domicilio',       label: 'Domicilio',     defaultOn: false },
@@ -28,8 +23,15 @@
     { key: 'poblacion',       label: 'Población',     defaultOn: false },
     { key: 'cp',              label: 'C.P.',          defaultOn: false },
     { key: 'provincia',       label: 'Provincia',     defaultOn: false },
-    { key: 'c_corredor',      label: 'Cód. corredor', defaultOn: false },
-    { key: 'c_agente',        label: 'Cód. agente',   defaultOn: false }
+    { key: 'n_poliza',        label: 'Nº Póliza',     defaultOn: true  },
+    { key: 'f_pol',           label: 'F. póliza',     defaultOn: false },
+    { key: 'ramo',            label: 'Ramo',          defaultOn: true  },
+    { key: 'cia',             label: 'Compañía',      defaultOn: true  },
+    { key: 'matricula',       label: 'Matrícula',     defaultOn: true  },
+    { key: 'prima',           label: 'Prima',         defaultOn: true,  align: 'right', numeric: true },
+    { key: 'c_corredor',      label: 'Com. corredor', defaultOn: false, align: 'right', numeric: true },
+    { key: 'c_agente',        label: 'Com. agente',   defaultOn: false, align: 'right', numeric: true },
+    { key: 'vencimiento',     label: 'Vencimiento',   defaultOn: true  }
   ];
 
   // ─── State ──────────────────────────────────────────────────────────────
@@ -39,8 +41,9 @@
   var gestionPorPagina = 25;
   var gestionFiltros = [];
   var gestionBusqueda = '';
-  var gestionColsVisible = null;   // array de keys; null = no cargado aún
-  var gestionFiltrosFecha = [];    // [{campo, label, desde, hasta}]
+  var gestionColsVisible = null;          // array de keys en orden de visualización
+  var gestionSort = { key: null, dir: 0 }; // dir: 0=sin orden, 1=asc, -1=desc
+  var gestionFiltrosFecha = [];           // [{campo, label, desde, hasta}]
   var searchTimer = null;
   var gestionSearchTimer = null;
   var polizaActual = null;
@@ -1006,18 +1009,35 @@
     });
   }
 
-  // ─── Gestión — columnas ────────────────────────────────────────────────
+  // ─── Gestión — columnas y configuración por usuario ──────────────────────
+
+  /** Clave de localStorage específica del usuario actual. */
+  function _gestionCfgKey() {
+    return 'hsl_gestion_cfg_' + (session.usuario() || 'default');
+  }
 
   function loadGestionCols() {
-    var saved = localStorage.getItem('hsl_gestion_cols');
-    if (saved) {
-      try { gestionColsVisible = JSON.parse(saved); return; } catch (e) {}
+    var raw = localStorage.getItem(_gestionCfgKey());
+    if (raw) {
+      try {
+        var cfg = JSON.parse(raw);
+        if (cfg.cols && cfg.cols.length) {
+          gestionColsVisible = cfg.cols;
+          if (cfg.sort) gestionSort = cfg.sort;
+          return;
+        }
+      } catch (e) {}
     }
+    // Valores por defecto: columnas con defaultOn en orden canónico del sheet
     gestionColsVisible = TODAS_COLUMNAS.filter(function (c) { return c.defaultOn; }).map(function (c) { return c.key; });
+    gestionSort = { key: null, dir: 0 };
   }
 
   function saveGestionCols() {
-    localStorage.setItem('hsl_gestion_cols', JSON.stringify(gestionColsVisible));
+    localStorage.setItem(_gestionCfgKey(), JSON.stringify({
+      cols: gestionColsVisible,
+      sort: gestionSort
+    }));
   }
 
   window.toggleColumnasPanel = function () {
@@ -1031,6 +1051,7 @@
     }
   };
 
+  /** El panel siempre muestra columnas en orden canónico (TODAS_COLUMNAS). */
   function renderColumnasPanel() {
     if (!gestionColsVisible) loadGestionCols();
     var lista = $('columnas-lista');
@@ -1045,18 +1066,14 @@
     var key = cb.value;
     if (cb.checked) {
       if (gestionColsVisible.indexOf(key) === -1) {
-        // Insertar en el orden de TODAS_COLUMNAS
+        // Insertar en posición canónica respecto a las columnas ya visibles
+        var canonIdx = -1;
+        TODAS_COLUMNAS.forEach(function (c, i) { if (c.key === key) canonIdx = i; });
         var insertAt = gestionColsVisible.length;
-        TODAS_COLUMNAS.forEach(function (c, i) {
-          if (c.key === key) {
-            var insertIdx = 0;
-            TODAS_COLUMNAS.slice(0, i).forEach(function (prev) {
-              var pos = gestionColsVisible.indexOf(prev.key);
-              if (pos !== -1) insertIdx = pos + 1;
-            });
-            insertAt = insertIdx;
-          }
-        });
+        for (var i = canonIdx + 1; i < TODAS_COLUMNAS.length; i++) {
+          var pos = gestionColsVisible.indexOf(TODAS_COLUMNAS[i].key);
+          if (pos !== -1) { insertAt = pos; break; }
+        }
         gestionColsVisible.splice(insertAt, 0, key);
       }
     } else {
@@ -1069,6 +1086,7 @@
 
   window.resetColumnas = function () {
     gestionColsVisible = TODAS_COLUMNAS.filter(function (c) { return c.defaultOn; }).map(function (c) { return c.key; });
+    gestionSort = { key: null, dir: 0 };
     saveGestionCols();
     renderColumnasPanel();
     gestionPagina = 1;
@@ -1183,13 +1201,31 @@
     // Filtros por fecha (AND)
     gestionFiltrosFecha.forEach(function (f) {
       result = result.filter(function (r) {
-        var val = String(r[f.campo] || '').trim().slice(0, 10); // normaliza a YYYY-MM-DD
+        var val = String(r[f.campo] || '').trim().slice(0, 10);
         if (!val) return false;
         if (f.desde && val < f.desde) return false;
         if (f.hasta && val > f.hasta) return false;
         return true;
       });
     });
+
+    // Ordenación
+    if (gestionSort.key && gestionSort.dir !== 0) {
+      var colDef = null;
+      TODAS_COLUMNAS.forEach(function (c) { if (c.key === gestionSort.key) colDef = c; });
+      var isNumeric = colDef && colDef.numeric;
+      result = result.slice().sort(function (a, b) {
+        var av = a[gestionSort.key] != null ? a[gestionSort.key] : '';
+        var bv = b[gestionSort.key] != null ? b[gestionSort.key] : '';
+        if (isNumeric) {
+          // Parsear importes con formato "1.500,00 €"
+          var na = parseFloat(String(av).replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+          var nb = parseFloat(String(bv).replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+          return gestionSort.dir * (na - nb);
+        }
+        return gestionSort.dir * String(av).localeCompare(String(bv), 'es', { sensitivity: 'base' });
+      });
+    }
 
     return result;
   }
@@ -1205,14 +1241,79 @@
     var start = (gestionPagina - 1) * gestionPorPagina;
     var page = filtered.slice(start, start + gestionPorPagina);
 
-    // Columnas activas (respeta el orden de TODAS_COLUMNAS)
-    var activeCols = TODAS_COLUMNAS.filter(function (c) { return gestionColsVisible.indexOf(c.key) !== -1; });
+    // Columnas activas: respeta el orden de gestionColsVisible (el que el usuario configuró)
+    var activeCols = gestionColsVisible.map(function (key) {
+      for (var i = 0; i < TODAS_COLUMNAS.length; i++) {
+        if (TODAS_COLUMNAS[i].key === key) return TODAS_COLUMNAS[i];
+      }
+      return null;
+    }).filter(Boolean);
 
-    // Thead dinámico
+    // ── Thead: ordenable (clic) y reordenable (drag) ───────────────────────
     var thead = $('gestion-thead');
-    thead.innerHTML = '<tr>' + activeCols.map(function (c) {
-      return '<th' + (c.align ? ' style="text-align:' + c.align + '"' : '') + '>' + escapeHtml(c.label) + '</th>';
-    }).join('') + '</tr>';
+    thead.innerHTML = '';
+    var headerRow = document.createElement('tr');
+    activeCols.forEach(function (c, colIdx) {
+      var th = document.createElement('th');
+      if (c.align) th.style.textAlign = c.align;
+      th.draggable = true;
+      th.title = 'Clic para ordenar · Arrastra para mover';
+
+      // Icono de orden
+      var sortIcon = gestionSort.key === c.key
+        ? (gestionSort.dir === 1 ? ' ▲' : ' ▼') : '';
+      th.textContent = c.label + sortIcon;
+
+      // Ciclo de ordenación: asc → desc → sin orden
+      th.addEventListener('click', function () {
+        if (gestionSort.key === c.key) {
+          if (gestionSort.dir === 1)       { gestionSort.dir = -1; }
+          else if (gestionSort.dir === -1) { gestionSort.key = null; gestionSort.dir = 0; }
+          else                             { gestionSort.dir = 1; }
+        } else {
+          gestionSort.key = c.key;
+          gestionSort.dir = 1;
+        }
+        saveGestionCols();
+        gestionPagina = 1;
+        renderGestion();
+      });
+
+      // ── Drag-to-reorder ─────────────────────────────────────────────────
+      th.addEventListener('dragstart', function (e) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(colIdx));
+        th.classList.add('col-th-dragging');
+      });
+      th.addEventListener('dragend', function () {
+        th.classList.remove('col-th-dragging');
+        headerRow.querySelectorAll('th').forEach(function (el) { el.classList.remove('col-th-over'); });
+      });
+      th.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        headerRow.querySelectorAll('th').forEach(function (el) { el.classList.remove('col-th-over'); });
+        th.classList.add('col-th-over');
+      });
+      th.addEventListener('dragleave', function () {
+        th.classList.remove('col-th-over');
+      });
+      th.addEventListener('drop', function (e) {
+        e.preventDefault();
+        th.classList.remove('col-th-over');
+        var fromIdx = Number(e.dataTransfer.getData('text/plain'));
+        var toIdx = colIdx;
+        if (fromIdx === toIdx) return;
+        var moved = gestionColsVisible.splice(fromIdx, 1)[0];
+        gestionColsVisible.splice(toIdx, 0, moved);
+        saveGestionCols();
+        renderGestion();
+        if (!$('columnas-panel').classList.contains('hidden')) renderColumnasPanel();
+      });
+
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
 
     // Tbody
     var tbody = $('gestion-tbody');

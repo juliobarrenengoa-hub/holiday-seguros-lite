@@ -1139,6 +1139,26 @@ table tbody tr.clickable {
 }
 .filtro-chip button:hover { opacity: 1; }
 
+/* ─── TABLA GESTIÓN — columnas ordenables y arrastrables ─────────────────── */
+
+#gestion-thead th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+#gestion-thead th:hover {
+  background: #e4ecf6;
+}
+#gestion-thead th.col-th-dragging {
+  opacity: 0.38;
+  background: #d0ddf0;
+}
+#gestion-thead th.col-th-over {
+  border-left: 3px solid var(--primary);
+  background: rgba(21,101,192,0.07);
+}
+
 /* ─── DOCUMENTACIÓN INLINE ───────────────────────────────────────────────── */
 
 .docs-inline-section {

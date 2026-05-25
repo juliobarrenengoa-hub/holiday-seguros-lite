@@ -820,11 +820,38 @@
 
   // ─── Catálogo ─────────────────────────────────────────────────────────
 
+  window.sincronizarCatalogos = function () {
+    utils.setMsg('cat-global-msg', '⌛ Sincronizando desde pólizas...', 'ok');
+    // Recargar catálogos — _sembrarCatalogos() se ejecuta automáticamente en el backend
+    api.catalogos(session.token()).then(function (res) {
+      if (!res.success) { handleSessionError(res); return; }
+      renderCatalogoTabla('cat-ramo-tabla', res.catalogoRamos, 'RAMO');
+      renderCatalogoTabla('cat-cia-tabla', res.catalogoCompanias, 'CIA');
+      var totalRamos = (res.catalogoRamos || []).length;
+      var totalCias  = (res.catalogoCompanias || []).length;
+      utils.setMsg('cat-global-msg',
+        '✓ Sincronizado — ' + totalRamos + ' ramos, ' + totalCias + ' compañías.', 'ok');
+    }).catch(function (err) {
+      utils.setMsg('cat-global-msg', 'Error: ' + err.message, 'error');
+    });
+  };
+
+  window.poblarCatalogosDefecto = function () {
+    utils.setMsg('cat-global-msg', '⌛ Cargando predeterminados...', 'ok');
+    api.poblarCatalogosPorDefecto(session.token()).then(function (res) {
+      utils.setMsg('cat-global-msg', res.msg || 'Listo.', res.success ? 'ok' : 'error');
+      if (res.success) initCatalogo();
+    }).catch(function (err) {
+      utils.setMsg('cat-global-msg', 'Error: ' + err.message, 'error');
+    });
+  };
+
   function initCatalogo() {
     $('cat-ramo-input').value = '';
     $('cat-cia-input').value = '';
     utils.setMsg('cat-ramo-msg', '', '');
     utils.setMsg('cat-cia-msg', '', '');
+    utils.setMsg('cat-global-msg', '', '');
 
     api.catalogos(session.token()).then(function (res) {
       if (!res.success) { handleSessionError(res); return; }

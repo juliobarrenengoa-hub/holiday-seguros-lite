@@ -96,6 +96,10 @@ var api = (function () {
     return call('bajaCatalogo', { token: token, tipo: tipo, id: id });
   }
 
+  function poblarCatalogosPorDefecto(token) {
+    return call('poblarCatalogosPorDefecto', { token: token });
+  }
+
   function dashboard(token) {
     return call('dashboard', { token: token });
   }
@@ -141,6 +145,7 @@ var api = (function () {
     catalogos: catalogos,
     guardarCatalogo: guardarCatalogo,
     bajaCatalogo: bajaCatalogo,
+    poblarCatalogosPorDefecto: poblarCatalogosPorDefecto,
     dashboard: dashboard,
     listarArchivos: listarArchivos,
     subirArchivos: subirArchivos,

@@ -356,7 +356,14 @@
 
     <!-- ─── CATÁLOGOS ──────────────────────────────────────────────────── -->
     <div id="view-catalogo" class="app-view">
-      <h2 class="section-title">📚 Catálogos</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <h2 class="section-title" style="margin:0">📚 Catálogos</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-small" onclick="sincronizarCatalogos()" title="Añade al catálogo los ramos y compañías presentes en las pólizas">🔄 Sincronizar desde pólizas</button>
+          <button class="btn btn-outline btn-small" onclick="poblarCatalogosDefecto()" title="Añade ramos y compañías estándar del mercado asegurador español">✨ Cargar predeterminados</button>
+        </div>
+      </div>
+      <div id="cat-global-msg" class="msg" style="margin-bottom:10px"></div>
 
       <div class="catalogo-grid">
         <!-- Ramos -->

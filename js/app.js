@@ -111,7 +111,64 @@
   };
 
   window.doLoginGoogle = function () {
-    utils.setMsg('login-msg', 'El login con Google solo funciona dentro de Apps Script. Usa usuario y contraseña.', 'error');
+    utils.setMsg('login-msg', '', '');
+
+    var authUrl = api.getGoogleAuthUrl()
+      + '&origin=' + encodeURIComponent(window.location.origin);
+
+    var w = 520, h = 620;
+    var left = Math.round((screen.width  - w) / 2);
+    var top  = Math.round((screen.height - h) / 2);
+    var popup = window.open(
+      authUrl, 'googleAuthPopup',
+      'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
+      ',scrollbars=yes,resizable=yes'
+    );
+
+    if (!popup || popup.closed) {
+      utils.setMsg('login-msg', 'El navegador bloqueó el popup. Permite ventanas emergentes para este sitio e inténtalo de nuevo.', 'error');
+      return;
+    }
+
+    utils.setMsg('login-msg', '⌛ Esperando autenticación de Google...', 'ok');
+
+    var handler = function (event) {
+      // Aceptar mensajes de dominios de Google
+      if (!event.origin.includes('google.com') && !event.origin.includes('googleusercontent.com')) return;
+      window.removeEventListener('message', handler);
+      clearTimeout(timeout);
+
+      var data = event.data || {};
+      if (data.success) {
+        session.save(data.token, data.nombre);
+        utils.setMsg('login-msg', '', '');
+        showApp();
+      } else {
+        utils.setMsg('login-msg', data.msg || 'Error en autenticación con Google.', 'error');
+      }
+    };
+
+    window.addEventListener('message', handler);
+
+    // Timeout por si el usuario cierra el popup sin completar
+    var timeout = setTimeout(function () {
+      window.removeEventListener('message', handler);
+      if (!popup.closed) popup.close();
+      utils.setMsg('login-msg', '', '');
+    }, 120000);
+
+    // Detectar si el popup se cerró manualmente
+    var pollClosed = setInterval(function () {
+      if (popup.closed) {
+        clearInterval(pollClosed);
+        clearTimeout(timeout);
+        window.removeEventListener('message', handler);
+        // Solo limpiar si no hubo login exitoso
+        if (!session.isActive()) {
+          utils.setMsg('login-msg', '', '');
+        }
+      }
+    }, 500);
   };
 
   window.exitApp = function () {

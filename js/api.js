@@ -7,12 +7,19 @@ var api = (function () {
   // Se puede sobreescribir via localStorage('hsl_api_url') para desarrollo.
   var BASE_URL = 'https://script.google.com/macros/s/AKfycbwS2741OEpJfaM8pbcNcvC8m5SRdmk_GprWPRqwJOhxrjUGHFktu6ykcwO-AbAM0i_R/exec';
 
+  // URL del deployment con access:ANYONE para el popup de Google login
+  var GOOGLE_AUTH_URL = 'https://script.google.com/macros/s/AKfycbw31-C2X7Rw2qmr6V6zk_OW_CQJDA2eyrVqCloykwLprSOI5dGjdstoNxb3m5XVNVTh/exec?action=googleAuth';
+
   function setBaseUrl(url) {
     BASE_URL = url.replace(/\/+$/, '');
   }
 
   function getBaseUrl() {
     return BASE_URL;
+  }
+
+  function getGoogleAuthUrl() {
+    return GOOGLE_AUTH_URL;
   }
 
   function call(action, body) {
@@ -120,6 +127,7 @@ var api = (function () {
   return {
     setBaseUrl: setBaseUrl,
     getBaseUrl: getBaseUrl,
+    getGoogleAuthUrl: getGoogleAuthUrl,
     call: call,
     login: login,
     loginGoogle: loginGoogle,

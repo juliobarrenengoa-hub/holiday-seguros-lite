@@ -741,24 +741,34 @@
     if (sel) sel.value = '';
     _actualizarBadgeAgente('');
 
-    // Cargar la lista de agentes de forma independiente para que el select
-    // se rellene aunque falle la carga de KPIs (o viceversa).
+    // Intentar cargar agentes por endpoint dedicado (requiere deploy actualizado).
+    // Si falla o devuelve lista vacía, renderDashboard usará res.agentes como fallback.
     api.listarAgentes(session.token()).then(function (res) {
-      if (!res.success || !res.agentes || !res.agentes.length) return;
-      var s = $('dash-agente-select');
-      if (!s) return;
-      var current = s.value;
-      s.innerHTML = '<option value="">— Todos —</option>';
-      res.agentes.forEach(function (ag) {
-        var opt = document.createElement('option');
-        opt.value = ag;
-        opt.textContent = ag;
-        if (ag === current) opt.selected = true;
-        s.appendChild(opt);
-      });
-    }).catch(function () { /* si falla no bloqueamos el dashboard */ });
+      if (res.success && res.agentes && res.agentes.length) {
+        _poblarSelectAgentes(res.agentes);
+      }
+    }).catch(function (err) {
+      console.warn('[Dashboard] listarAgentes no disponible, se usará fallback desde dashboard:', err && err.message);
+    });
 
     _cargarDashboard('');
+  }
+
+  // Rellena el select de agentes manteniendo la selección actual.
+  function _poblarSelectAgentes(agentes) {
+    var s = $('dash-agente-select');
+    if (!s || !agentes || !agentes.length) return;
+    // Solo repoblar si la lista real es diferente (evitar parpadeo innecesario)
+    if (s.options.length - 1 === agentes.length) return; // -1 por "— Todos —"
+    var current = s.value;
+    s.innerHTML = '<option value="">— Todos —</option>';
+    agentes.forEach(function (ag) {
+      var opt = document.createElement('option');
+      opt.value = ag;
+      opt.textContent = ag;
+      if (ag === current) opt.selected = true;
+      s.appendChild(opt);
+    });
   }
 
   function _cargarDashboard(agente) {
@@ -812,6 +822,12 @@
     $('kpi-agente').textContent = utils.formatImporte(k.comisionAgente);
     $('kpi-vencidas').textContent = utils.formatNumero(k.vencidas);
     $('kpi-vencen30').textContent = utils.formatNumero(k.vencen30);
+
+    // Fallback: poblar select de agentes desde la respuesta del dashboard
+    // (útil si el endpoint listarAgentes aún no está desplegado).
+    if (res.agentes && res.agentes.length) {
+      _poblarSelectAgentes(res.agentes);
+    }
 
     renderBarChart('chart-ramo',      res.porRamo,           'polizas', utils.formatNumero);
     renderBarChart('chart-cia',        res.porCompania,       'polizas', utils.formatNumero);

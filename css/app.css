@@ -789,11 +789,12 @@ table tbody tr.clickable {
 }
 
 .bar-item .bar-fill {
+  display: block;         /* inline <span> no respeta width/height sin esto */
   height: 100%;
   background: var(--primary);
   border-radius: 9px;
-  min-width: 4px;
-  transition: width 0.4s ease;
+  width: 0;               /* punto de partida para la animación de entrada */
+  transition: width 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .bar-item .bar-value {

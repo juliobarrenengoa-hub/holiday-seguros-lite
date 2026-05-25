@@ -772,18 +772,28 @@
     if (!el) return;
     if (!datos || !datos.length) { el.innerHTML = '<p class="status-text">Sin datos</p>'; return; }
 
-    var max = datos.reduce(function (m, d) { return Math.max(m, d[campo] || 0); }, 0) || 1;
+    var max = datos.reduce(function (m, d) { return Math.max(m, Number(d[campo]) || 0); }, 0) || 1;
+    var pcts = [];
     var html = '<ul class="bar-list">';
-    datos.forEach(function (d) {
-      var pct = Math.max(2, ((d[campo] || 0) / max) * 100);
+    datos.forEach(function (d, i) {
+      var val = Number(d[campo]) || 0;
+      var pct = Math.max(2, (val / max) * 100);
+      pcts.push(pct);
       html += '<li class="bar-item">'
         + '<span class="bar-label" title="' + escapeHtml(d.label) + '">' + escapeHtml(d.label) + '</span>'
-        + '<span class="bar-track"><span class="bar-fill" style="width:' + pct + '%"></span></span>'
-        + '<span class="bar-value">' + formatFn(d[campo] || 0) + '</span>'
+        + '<span class="bar-track"><span class="bar-fill" data-w="' + pct.toFixed(2) + '"></span></span>'
+        + '<span class="bar-value">' + formatFn(val) + '</span>'
         + '</li>';
     });
     html += '</ul>';
     el.innerHTML = html;
+
+    // Animar barras: width parte de 0 (CSS) → valor real (rAF garantiza un frame pintado antes)
+    requestAnimationFrame(function () {
+      el.querySelectorAll('.bar-fill').forEach(function (fill) {
+        fill.style.width = fill.dataset.w + '%';
+      });
+    });
   }
 
   // ─── Documentación inline ────────────────────────────────────────────────

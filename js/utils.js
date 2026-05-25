@@ -35,7 +35,10 @@ var utils = (function () {
   function formatImporte(valor) {
     var n = parseFloat(valor);
     if (!isFinite(n)) return '0,00 €';
-    return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    // Formato manual "X.XXX,XX €" — no depende de toLocaleString (falla en algunos entornos)
+    var abs = Math.abs(n).toFixed(2).split('.');
+    var entero = abs[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return (n < 0 ? '-' : '') + entero + ',' + abs[1] + ' €';
   }
 
   function formatNumero(valor) {

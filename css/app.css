@@ -738,6 +738,75 @@ table tbody tr.clickable {
 .kpi-card.danger .kpi-value { color: var(--danger); }
 .kpi-card.warning .kpi-value { color: var(--warning); }
 
+/* ─── DASHBOARD FILTRO AGENTE ────────────────────────────────────────────── */
+
+.dash-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dash-filter-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.dash-filter-bar select {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: #fff;
+  cursor: pointer;
+  min-width: 180px;
+  transition: border-color 0.2s;
+}
+
+.dash-filter-bar select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(21,101,192,0.10);
+}
+
+.dash-filter-bar select.active {
+  border-color: var(--primary);
+  background: rgba(21,101,192,0.04);
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.dash-agente-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 3px 10px 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.dash-agente-badge .badge-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.75);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0 0 0 4px;
+  transition: color 0.15s;
+}
+.dash-agente-badge .badge-close:hover { color: #fff; }
+
+/* ─── DASHBOARD CHARTS ───────────────────────────────────────────────────── */
+
 .chart-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

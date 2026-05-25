@@ -146,7 +146,16 @@
 
     <!-- ─── DASHBOARD ──────────────────────────────────────────────────── -->
     <div id="view-dashboard" class="app-view">
-      <h2 class="section-title">📊 Dashboard</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <h2 class="section-title" style="margin:0">📊 Dashboard</h2>
+        <div class="dash-filter-bar">
+          <span class="dash-filter-label">Agente:</span>
+          <select id="dash-agente-select" onchange="onDashAgenteChange()">
+            <option value="">— Todos —</option>
+          </select>
+          <span id="dash-agente-badge" class="dash-agente-badge hidden"></span>
+        </div>
+      </div>
       <div id="dash-status" class="status-text"></div>
 
       <div class="kpi-grid">

@@ -733,23 +733,61 @@
 
   // ─── Dashboard ────────────────────────────────────────────────────────
 
-  function initDashboard() {
-    $('dash-status').textContent = 'Cargando dashboard...';
+  var dashAgenteActual = '';   // '' = todos
 
-    api.dashboard(session.token()).then(function (res) {
-      if (!res.success) {
-        handleSessionError(res);
-        $('dash-status').textContent = res.msg || 'Error.';
-        return;
-      }
+  function initDashboard() {
+    // Al entrar al dashboard siempre arranca en "Todos" (sin resetear el select si ya hay datos)
+    dashAgenteActual = '';
+    var sel = $('dash-agente-select');
+    if (sel) sel.value = '';
+    _actualizarBadgeAgente('');
+    _cargarDashboard('');
+  }
+
+  function _cargarDashboard(agente) {
+    $('dash-status').textContent = 'Cargando...';
+    api.dashboard(session.token(), agente).then(function (res) {
+      if (!res.success) { handleSessionError(res); $('dash-status').textContent = res.msg || 'Error.'; return; }
       $('dash-status').textContent = '';
-      renderDashboard(res);
+      renderDashboard(res, agente === '');
     }).catch(function (err) {
       $('dash-status').textContent = 'Error: ' + err.message;
     });
   }
 
-  function renderDashboard(res) {
+  window.onDashAgenteChange = function () {
+    var sel = $('dash-agente-select');
+    var agente = sel ? sel.value : '';
+    dashAgenteActual = agente;
+    _actualizarBadgeAgente(agente);
+    _cargarDashboard(agente);
+  };
+
+  window.limpiarFiltroAgente = function () {
+    dashAgenteActual = '';
+    var sel = $('dash-agente-select');
+    if (sel) sel.value = '';
+    _actualizarBadgeAgente('');
+    _cargarDashboard('');
+  };
+
+  function _actualizarBadgeAgente(agente) {
+    var sel = $('dash-agente-select');
+    var badge = $('dash-agente-badge');
+    if (sel) sel.classList.toggle('active', agente !== '');
+    if (badge) {
+      if (agente) {
+        badge.innerHTML = '👤 ' + escapeHtml(agente)
+          + ' <button class="badge-close" onclick="limpiarFiltroAgente()" title="Ver todos">✕</button>';
+        utils.show(badge);
+      } else {
+        badge.innerHTML = '';
+        utils.hide(badge);
+      }
+    }
+  }
+
+  function renderDashboard(res, esTotal) {
     var k = res.kpis;
     $('kpi-total').textContent = utils.formatNumero(k.totalPolizas);
     $('kpi-prima').textContent = utils.formatImporte(k.primaTotal);
@@ -758,13 +796,29 @@
     $('kpi-vencidas').textContent = utils.formatNumero(k.vencidas);
     $('kpi-vencen30').textContent = utils.formatNumero(k.vencen30);
 
-    renderBarChart('chart-ramo', res.porRamo, 'polizas', utils.formatNumero);
-    renderBarChart('chart-cia', res.porCompania, 'polizas', utils.formatNumero);
-    renderBarChart('chart-ramo-prima', res.porRamo, 'prima', utils.formatImporte);
-    renderBarChart('chart-cia-prima', res.porCompania, 'prima', utils.formatImporte);
-    renderBarChart('chart-venc-mes', res.vencimientosPorMes, 'polizas', utils.formatNumero);
-    renderBarChart('chart-pol-mes', res.polizasPorMes, 'polizas', utils.formatNumero);
-    renderBarChart('chart-prima-mes', res.primasPorMes, 'prima', utils.formatImporte);
+    // Poblar select de agentes solo la primera carga (para no perder la selección activa)
+    if (esTotal && res.agentes && res.agentes.length) {
+      var sel = $('dash-agente-select');
+      if (sel) {
+        var current = sel.value;
+        sel.innerHTML = '<option value="">— Todos —</option>';
+        res.agentes.forEach(function (ag) {
+          var opt = document.createElement('option');
+          opt.value = ag;
+          opt.textContent = ag;
+          if (ag === current) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+    }
+
+    renderBarChart('chart-ramo',      res.porRamo,           'polizas', utils.formatNumero);
+    renderBarChart('chart-cia',        res.porCompania,       'polizas', utils.formatNumero);
+    renderBarChart('chart-ramo-prima', res.porRamo,           'prima',   utils.formatImporte);
+    renderBarChart('chart-cia-prima',  res.porCompania,       'prima',   utils.formatImporte);
+    renderBarChart('chart-venc-mes',   res.vencimientosPorMes,'polizas', utils.formatNumero);
+    renderBarChart('chart-pol-mes',    res.polizasPorMes,     'polizas', utils.formatNumero);
+    renderBarChart('chart-prima-mes',  res.primasPorMes,      'prima',   utils.formatImporte);
   }
 
   function renderBarChart(containerId, datos, campo, formatFn) {

@@ -100,8 +100,8 @@ var api = (function () {
     return call('poblarCatalogosPorDefecto', { token: token });
   }
 
-  function dashboard(token) {
-    return call('dashboard', { token: token });
+  function dashboard(token, agente) {
+    return call('dashboard', { token: token, agente: agente || '' });
   }
 
   function listarArchivos(token, urlDrive) {

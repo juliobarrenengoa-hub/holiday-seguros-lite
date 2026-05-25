@@ -1139,6 +1139,117 @@ table tbody tr.clickable {
 }
 .filtro-chip button:hover { opacity: 1; }
 
+/* ─── DOCUMENTACIÓN INLINE ───────────────────────────────────────────────── */
+
+.docs-inline-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #fff;
+}
+
+.docs-inline-status {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 6px 12px 0;
+  min-height: 0;
+}
+
+.docs-inline-list {
+  padding: 4px 4px 0;
+}
+
+.docs-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  margin: 2px 0;
+}
+
+.docs-item:hover {
+  background: #f0f4f8;
+}
+
+.docs-item-ext {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 5px;
+  letter-spacing: 0.03em;
+  min-width: 30px;
+  text-align: center;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.docs-item-staged .docs-item-ext {
+  background: var(--text-muted);
+}
+
+.docs-item-name {
+  flex: 1;
+  font-size: 0.87rem;
+  color: var(--primary);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.docs-item-name:hover { text-decoration: underline; }
+
+.docs-item-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-size: 1rem;
+  padding: 2px 4px;
+  color: var(--danger);
+  flex-shrink: 0;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.docs-item:hover .docs-item-delete { opacity: 1; }
+
+.docs-drop-zone {
+  border-top: 1px dashed var(--border);
+  padding: 16px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  user-select: none;
+  margin-top: 4px;
+}
+.docs-drop-zone:hover,
+.docs-drop-zone.dragover {
+  background: rgba(21,101,192,0.05);
+  border-top-color: var(--primary);
+  color: var(--primary);
+}
+.docs-drop-zone.dragover { background: rgba(21,101,192,0.09); }
+.docs-drop-icon { font-size: 1.2rem; line-height: 1; }
+
+.docs-upload-status {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 4px 12px 8px;
+  display: none;
+}
+.docs-upload-status:not(:empty) { display: block; }
+
 /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {

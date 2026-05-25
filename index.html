@@ -327,21 +327,31 @@
               <div class="form-field"><label>Compañía *</label><select id="f-cia" required><option value="">- Seleccionar -</option></select></div>
             </div>
             <div class="form-row-4">
-              <div class="form-field"><label>Matrícula</label><input id="f-matricula" type="text" maxlength="15"></div>
-              <div class="form-field"><label>Prima *</label><input id="f-prima" type="text" maxlength="15" required></div>
-              <div class="form-field"><label>Com. corredor</label><input id="f-c-corredor" type="text" maxlength="15"></div>
-              <div class="form-field"><label>Com. agente</label><input id="f-c-agente" type="text" maxlength="15"></div>
+              <div class="form-field"><label>Matrícula</label><input id="f-matricula" type="text" maxlength="15" onblur="autoFormatMatricula(this)"></div>
+              <div class="form-field"><label>Prima *</label><input id="f-prima" type="text" maxlength="15" onblur="autoFormatMoneda(this)" required></div>
+              <div class="form-field"><label>Com. corredor</label><input id="f-c-corredor" type="text" maxlength="15" onblur="autoFormatMoneda(this)"></div>
+              <div class="form-field"><label>Com. agente</label><input id="f-c-agente" type="text" maxlength="15" onblur="autoFormatMoneda(this)"></div>
             </div>
             <div class="form-row-4">
               <div class="form-field"><label>Vencimiento *</label><input id="f-vencimiento" type="date" required></div>
               <div></div><div></div><div></div>
             </div>
 
-            <!-- Archivos (solo alta nueva) -->
+            <!-- Documentación inline -->
             <div class="form-section-title">Documentación</div>
-            <div class="form-field">
-              <label>Adjuntar archivos (solo en alta nueva)</label>
-              <input id="f-archivos" type="file" multiple style="padding:8px 0">
+            <div id="docs-inline-section" class="docs-inline-section">
+              <div id="docs-inline-status" class="docs-inline-status"></div>
+              <div id="docs-inline-list" class="docs-inline-list"></div>
+              <div id="docs-drop-zone" class="docs-drop-zone"
+                   onclick="docsDropZoneClick()"
+                   ondragover="docsDropZoneOver(event)"
+                   ondragleave="docsDropZoneLeave(event)"
+                   ondrop="docsDropZoneDrop(event)">
+                <span class="docs-drop-icon">📎</span>
+                <span>Haz clic o arrastra un archivo</span>
+                <input type="file" id="f-archivos" multiple style="display:none">
+              </div>
+              <div id="docs-upload-status" class="docs-upload-status"></div>
             </div>
           </div>
 
@@ -350,7 +360,6 @@
           <div class="btn-group" style="margin-top:20px">
             <button id="btn-guardar" type="button" class="btn btn-primary" onclick="guardarPoliza()">Guardar</button>
             <button id="btn-baja" type="button" class="btn btn-danger hidden" onclick="darBaja()">Dar de baja</button>
-            <button id="btn-docs" type="button" class="btn btn-outline hidden" onclick="verDocumentos()">Documentos</button>
             <button type="button" class="btn btn-outline" onclick="limpiarFormulario()">Limpiar</button>
           </div>
         </form>

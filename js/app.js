@@ -45,10 +45,58 @@
   var gestionSearchTimer = null;
   var polizaActual = null;
 
+  // ── Documentos inline ──────────────────────────────────────────────────
+  var docsUrlDrive = '';            // URL carpeta Drive del registro activo
+  var docsStagedFiles = [];         // File[] pendientes solo en alta nueva
+  var docsArchivosEnDrive = [];     // [{id,nombre,url,mimeType}] del Drive
+
+  // ─── Validaciones y auto-formato ────────────────────────────────────────
+
+  /**
+   * Matrícula española: 4 dígitos + espacio + 3 letras (mayúsculas).
+   * Acepta "1234abc", "1234 abc", "1234ABC" → convierte a "1234 ABC".
+   */
+  window.autoFormatMatricula = function (input) {
+    var val = input.value.trim().replace(/\s+/g, '');
+    if (!val) return;
+    var m = val.match(/^(\d{4})([A-Za-z]{3})$/);
+    if (m) input.value = m[1] + ' ' + m[2].toUpperCase();
+  };
+
+  /**
+   * Importe en euros: acepta "1500", "1500.5", "1500,50", "1.500,50" → "1.500,00 €".
+   * Vacío se deja vacío. No sobreescribe si ya está formateado.
+   */
+  window.autoFormatMoneda = function (input) {
+    var raw = input.value.trim().replace(/€/g, '').replace(/\s/g, '');
+    if (!raw) return;
+    // Detectar si usa coma como decimal ("1.500,50") o punto ("1500.50")
+    var num;
+    if (raw.indexOf(',') !== -1) {
+      // Formato español: quitar puntos de miles y convertir coma a punto
+      num = parseFloat(raw.replace(/\./g, '').replace(',', '.'));
+    } else {
+      num = parseFloat(raw);
+    }
+    if (isNaN(num) || !isFinite(num)) return;
+    // Formatear como "1.500,00 €"
+    var partes = num.toFixed(2).split('.');
+    var entero = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    input.value = entero + ',' + partes[1] + ' €';
+  };
+
   // ─── Init ───────────────────────────────────────────────────────────────
 
   document.addEventListener('DOMContentLoaded', function () {
     initConfigCheck();
+    // Conectar el input de archivos del formulario con el gestor inline
+    var fArchivos = $('f-archivos');
+    if (fArchivos) {
+      fArchivos.addEventListener('change', function () {
+        docsHandleFiles(this.files);
+        this.value = '';
+      });
+    }
   });
 
   function initConfigCheck() {
@@ -422,13 +470,13 @@
       }, 300);
 
       utils.show('btn-baja');
-      utils.show('btn-docs');
+      initDocsInline(r.url || '');
     } else {
       $('f-fila').value = '';
       $('f-url-drive').value = '';
       $('f-tipo-cliente').value = 'Particular';
       utils.hide('btn-baja');
-      utils.hide('btn-docs');
+      initDocsInline('');
     }
   }
 
@@ -511,17 +559,16 @@
     };
 
     var fila = $('f-fila').value ? Number($('f-fila').value) : 0;
-    var fileInput = $('f-archivos');
-    var files = fileInput ? fileInput.files : [];
 
     setBtnProcessing('btn-guardar', 'Guardando...');
     utils.setMsg('form-msg', 'Procesando...', 'ok');
 
+    // Archivos staged en alta nueva (en edición se suben inline directamente)
     var archivosPromise;
-    if (files.length > 0 && !fila) {
-      archivosPromise = Promise.all(Array.from(files).map(function (f) {
+    if (docsStagedFiles.length > 0 && !fila) {
+      archivosPromise = Promise.all(docsStagedFiles.map(function (f) {
         return utils.toBase64(f).then(function (b64) {
-          return { nombre: f.name, data: b64, mimeType: f.type };
+          return { nombre: f.name, data: b64, mimeType: f.type || 'application/octet-stream' };
         });
       }));
     } else {
@@ -536,14 +583,14 @@
         utils.setMsg('form-msg', res.msg, 'ok');
         if (res.urlDrive) $('f-url-drive').value = res.urlDrive;
         if (!fila && res.fila) {
-          // Primera vez que se guarda: cambiar a modo edición para
-          // que pulsaciones adicionales actualicen la misma fila
-          // en lugar de crear un registro duplicado.
+          // Primera vez guardada: pasar a modo edición para evitar duplicados
           $('f-fila').value = res.fila;
           $('form-title').textContent = 'Editar póliza';
           $('form-mode').textContent = 'Editando registro existente';
           utils.show('btn-baja');
-          utils.show('btn-docs');
+          // Reinicializar docs con la carpeta Drive ya creada
+          docsStagedFiles = [];
+          initDocsInline(res.urlDrive || '');
         }
       } else {
         handleSessionError(res);
@@ -725,6 +772,203 @@
     });
     html += '</ul>';
     el.innerHTML = html;
+  }
+
+  // ─── Documentación inline ────────────────────────────────────────────────
+
+  /** Extrae la extensión legible de un nombre de archivo o mimeType. */
+  function _extArchivo(nombre, mimeType) {
+    var m = (nombre || '').match(/\.([^.]{1,5})$/);
+    if (m) return m[1].toLowerCase();
+    var mm = {
+      'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png',
+      'image/gif': 'gif', 'image/webp': 'webp',
+      'application/msword': 'doc',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+      'application/vnd.ms-excel': 'xls',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+      'text/plain': 'txt', 'application/zip': 'zip'
+    };
+    return mm[mimeType] || 'arch';
+  }
+
+  /**
+   * Inicializa la sección de docs inline del formulario.
+   * Llamar desde initFormulario con la URL Drive del registro (o '' si alta nueva).
+   */
+  function initDocsInline(urlDrive) {
+    docsUrlDrive = urlDrive || '';
+    docsStagedFiles = [];
+    docsArchivosEnDrive = [];
+    var statusEl = $('docs-inline-status');
+    var uploadEl = $('docs-upload-status');
+    if (statusEl) statusEl.textContent = '';
+    if (uploadEl) uploadEl.textContent = '';
+
+    if (docsUrlDrive) {
+      if (statusEl) statusEl.textContent = 'Cargando documentos…';
+      api.listarArchivos(session.token(), docsUrlDrive).then(function (res) {
+        if (statusEl) statusEl.textContent = '';
+        if (res.success) {
+          docsArchivosEnDrive = res.archivos || [];
+          renderDocsLista();
+        } else {
+          if (statusEl) statusEl.textContent = res.msg || 'Error al cargar documentos.';
+        }
+      }).catch(function (err) {
+        if (statusEl) statusEl.textContent = 'Error: ' + err.message;
+      });
+    } else {
+      renderDocsLista(); // lista vacía + zona de drop
+    }
+  }
+
+  function renderDocsLista() {
+    var list = $('docs-inline-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    // Archivos en Drive
+    docsArchivosEnDrive.forEach(function (a) {
+      var ext = _extArchivo(a.nombre, a.mimeType);
+      var div = document.createElement('div');
+      div.className = 'docs-item';
+      var link = document.createElement('a');
+      link.className = 'docs-item-name';
+      link.href = a.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.title = a.nombre;
+      link.textContent = a.nombre;
+      var extSpan = document.createElement('span');
+      extSpan.className = 'docs-item-ext';
+      extSpan.textContent = ext;
+      var delBtn = document.createElement('button');
+      delBtn.className = 'docs-item-delete';
+      delBtn.title = 'Eliminar';
+      delBtn.textContent = '🗑️';
+      delBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        docsEliminarArchivo(a.id, a.nombre);
+      });
+      div.appendChild(extSpan);
+      div.appendChild(link);
+      div.appendChild(delBtn);
+      list.appendChild(div);
+    });
+
+    // Archivos staged (pendientes, solo alta nueva)
+    docsStagedFiles.forEach(function (f, idx) {
+      var ext = _extArchivo(f.name, f.type);
+      var div = document.createElement('div');
+      div.className = 'docs-item docs-item-staged';
+      var extSpan = document.createElement('span');
+      extSpan.className = 'docs-item-ext';
+      extSpan.textContent = ext;
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'docs-item-name';
+      nameSpan.style.cursor = 'default';
+      nameSpan.style.color = 'var(--text-muted)';
+      nameSpan.title = f.name;
+      nameSpan.innerHTML = escapeHtml(f.name) + ' <em style="font-size:0.76rem">(pendiente)</em>';
+      var delBtn = document.createElement('button');
+      delBtn.className = 'docs-item-delete';
+      delBtn.title = 'Quitar';
+      delBtn.textContent = '🗑️';
+      (function (i) {
+        delBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          docsStagedFiles.splice(i, 1);
+          renderDocsLista();
+        });
+      }(idx));
+      div.appendChild(extSpan);
+      div.appendChild(nameSpan);
+      div.appendChild(delBtn);
+      list.appendChild(div);
+    });
+
+    if (!docsArchivosEnDrive.length && !docsStagedFiles.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'padding:8px 12px;font-size:0.83rem;color:var(--text-faint)';
+      empty.textContent = 'Sin documentos adjuntos.';
+      list.appendChild(empty);
+    }
+  }
+
+  window.docsDropZoneClick = function () {
+    var input = $('f-archivos');
+    if (input) input.click();
+  };
+
+  window.docsDropZoneOver = function (e) {
+    e.preventDefault();
+    var dz = $('docs-drop-zone');
+    if (dz) dz.classList.add('dragover');
+  };
+
+  window.docsDropZoneLeave = function (e) {
+    var dz = $('docs-drop-zone');
+    if (dz) dz.classList.remove('dragover');
+  };
+
+  window.docsDropZoneDrop = function (e) {
+    e.preventDefault();
+    var dz = $('docs-drop-zone');
+    if (dz) dz.classList.remove('dragover');
+    docsHandleFiles(e.dataTransfer.files);
+  };
+
+  function docsHandleFiles(files) {
+    if (!files || !files.length) return;
+    if (docsUrlDrive) {
+      // Registro existente: subir inmediatamente a Drive
+      docsSubirInmediato(Array.from(files));
+    } else {
+      // Alta nueva: staging local hasta que se grabe la póliza
+      Array.from(files).forEach(function (f) { docsStagedFiles.push(f); });
+      renderDocsLista();
+    }
+  }
+
+  function docsSubirInmediato(files) {
+    var uploadEl = $('docs-upload-status');
+    if (uploadEl) uploadEl.textContent = 'Subiendo ' + files.length + ' archivo(s)…';
+    Promise.all(files.map(function (f) {
+      return utils.toBase64(f).then(function (b64) {
+        return { nombre: f.name, data: b64, mimeType: f.type || 'application/octet-stream' };
+      });
+    })).then(function (archivos) {
+      return api.subirArchivos(session.token(), docsUrlDrive, archivos);
+    }).then(function (res) {
+      if (!res.success) {
+        if (uploadEl) uploadEl.textContent = res.msg || 'Error al subir.';
+        return null;
+      }
+      if (uploadEl) uploadEl.textContent = '';
+      return api.listarArchivos(session.token(), docsUrlDrive);
+    }).then(function (res) {
+      if (res && res.success) {
+        docsArchivosEnDrive = res.archivos || [];
+        renderDocsLista();
+      }
+    }).catch(function (err) {
+      if (uploadEl) uploadEl.textContent = 'Error: ' + err.message;
+    });
+  }
+
+  function docsEliminarArchivo(fileId, nombre) {
+    if (!confirm('¿Eliminar "' + nombre + '"?')) return;
+    api.eliminarArchivo(session.token(), docsUrlDrive, fileId).then(function (res) {
+      if (res.success) {
+        docsArchivosEnDrive = docsArchivosEnDrive.filter(function (a) { return a.id !== fileId; });
+        renderDocsLista();
+      } else {
+        alert(res.msg || 'Error al eliminar.');
+      }
+    }).catch(function (err) {
+      alert('Error: ' + err.message);
+    });
   }
 
   // ─── Gestión — columnas ────────────────────────────────────────────────

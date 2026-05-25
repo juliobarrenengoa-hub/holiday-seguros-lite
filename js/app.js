@@ -368,6 +368,10 @@
   window.doLogout = function () {
     api.logout(session.token());
     session.clear();
+    // Limpiar estado en memoria para que el próximo login cargue su propia config
+    gestionColsVisible = null;
+    gestionSort = { key: null, dir: 0 };
+    gestionData = [];
     showLogin();
   };
 
@@ -1154,7 +1158,7 @@
   // ─── Gestión ──────────────────────────────────────────────────────────
 
   function initGestion() {
-    if (!gestionColsVisible) loadGestionCols();
+    loadGestionCols(); // siempre recarga: la clave depende del usuario en sesión
     gestionPagina = 1;
     gestionFiltrosFecha = [];
     gestionBusqueda = '';
@@ -1377,9 +1381,10 @@
     var filtered = filtrarGestion();
     if (!filtered.length) { alert('No hay datos para exportar.'); return; }
 
-    // CSV exporta siempre todos los campos (independiente de las columnas visibles)
-    var headers = ['Nombre', 'DNI/CIF', 'Nº Póliza', 'Ramo', 'Compañía', 'Matrícula', 'Prima', 'Vencimiento', 'Fecha alta', 'F. póliza', 'Agente', 'Tipo', 'Teléfono', 'Email', 'Domicilio', 'Número', 'Población', 'CP', 'Provincia', 'Cód. corredor', 'Cód. agente'];
-    var fields  = ['nombre_completo', 'dni_cif', 'n_poliza', 'ramo', 'cia', 'matricula', 'prima', 'vencimiento', 'fecha_alta', 'f_pol', 'agente', 'tipo', 'telefono', 'email', 'domicilio', 'numero', 'poblacion', 'cp', 'provincia', 'c_corredor', 'c_agente'];
+    // CSV exporta todos los campos en orden canónico del sheet.
+    // Cabeceras derivadas de TODAS_COLUMNAS para evitar discrepancias.
+    var fields  = TODAS_COLUMNAS.map(function (c) { return c.key; });
+    var headers = TODAS_COLUMNAS.map(function (c) { return c.label; });
 
     var csv = '﻿' + headers.join(';') + '\n';
     filtered.forEach(function (r) {

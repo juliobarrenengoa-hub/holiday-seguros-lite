@@ -300,8 +300,8 @@
             </div>
             <div class="form-row-4">
               <div class="form-field"><label>Apellido 2</label><input id="f-ape2" type="text" maxlength="30"></div>
-              <div class="form-field"><label>Teléfono</label><input id="f-telefono" type="text" maxlength="30"></div>
-              <div class="form-field"><label>Email</label><input id="f-email" type="email" maxlength="80"></div>
+              <div class="form-field"><label>Teléfono *</label><input id="f-telefono" type="text" maxlength="30" required></div>
+              <div class="form-field"><label>Email *</label><input id="f-email" type="email" maxlength="80" required></div>
               <div></div>
             </div>
 
@@ -322,12 +322,12 @@
             <div class="form-section-title">Datos del seguro</div>
             <div class="form-row-4">
               <div class="form-field"><label>Nº Póliza *</label><input id="f-n-poliza" type="text" maxlength="30" required></div>
-              <div class="form-field"><label>Fecha póliza</label><input id="f-fecha-pol" type="date"></div>
+              <div class="form-field"><label>Fecha póliza *</label><input id="f-fecha-pol" type="date" required></div>
               <div class="form-field"><label>Ramo *</label><select id="f-ramo" required><option value="">- Seleccionar -</option></select></div>
               <div class="form-field"><label>Compañía *</label><select id="f-cia" required><option value="">- Seleccionar -</option></select></div>
             </div>
             <div class="form-row-4">
-              <div class="form-field"><label>Matrícula</label><input id="f-matricula" type="text" maxlength="15" onblur="autoFormatMatricula(this)"></div>
+              <div class="form-field"><label>Matrícula *</label><input id="f-matricula" type="text" maxlength="15" onblur="autoFormatMatricula(this)" required></div>
               <div class="form-field"><label>Prima *</label><input id="f-prima" type="text" maxlength="15" onblur="autoFormatMoneda(this)" required></div>
               <div class="form-field"><label>Com. corredor</label><input id="f-c-corredor" type="text" maxlength="15" onblur="autoFormatMoneda(this)"></div>
               <div class="form-field"><label>Com. agente</label><input id="f-c-agente" type="text" maxlength="15" onblur="autoFormatMoneda(this)"></div>

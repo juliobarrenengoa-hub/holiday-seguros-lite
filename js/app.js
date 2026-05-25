@@ -524,7 +524,7 @@
   };
 
   window.guardarPoliza = function () {
-    var campos = ['f-dni', 'f-nombre', 'f-n-poliza', 'f-ramo', 'f-cia', 'f-prima', 'f-vencimiento'];
+    var campos = ['f-dni', 'f-nombre', 'f-telefono', 'f-email', 'f-n-poliza', 'f-fecha-pol', 'f-ramo', 'f-cia', 'f-matricula', 'f-prima', 'f-vencimiento'];
     for (var i = 0; i < campos.length; i++) {
       if (!$(campos[i]).value.trim()) {
         utils.setMsg('form-msg', 'Completa todos los campos obligatorios.', 'error');

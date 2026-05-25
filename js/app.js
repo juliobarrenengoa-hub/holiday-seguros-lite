@@ -33,8 +33,10 @@
     // así que getBaseUrl() nunca estará vacío en producción.
 
     // ── Google Auth redirect callback ─────────────────────────────────────
-    // El popup de Google login redirige de vuelta a la SPA con ?gauth=1&token=...
-    // Detectamos ese parámetro aquí antes de cualquier otra lógica.
+    // Apps Script redirige el popup (o su iframe interno) a la SPA con ?gauth=1&token=...
+    // Usamos dos canales para pasar el resultado a la pestaña principal:
+    //   1) postMessage  — cuando el popup navega en su top frame (window.opener disponible)
+    //   2) localStorage — cuando el popup corre dentro del iframe de Apps Script (sin opener)
     var urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('gauth')) {
       var gauthOk = urlParams.get('gauth') === '1';
@@ -45,8 +47,17 @@
       // Limpiar los parámetros de la URL (no añadir al historial)
       window.history.replaceState({}, '', window.location.pathname);
 
+      // Canal 1: guardar en localStorage (la pestaña principal hace polling)
+      try {
+        localStorage.setItem('hsl_gauth_result', JSON.stringify(
+          gauthOk && gToken && gNombre
+            ? { success: true, token: gToken, nombre: gNombre, ts: Date.now() }
+            : { success: false, msg: gMsg, ts: Date.now() }
+        ));
+      } catch (e) {}
+
       if (window.opener && !window.opener.closed) {
-        // Estamos en el popup: enviar resultado al padre y cerrar
+        // Canal 2: postMessage (popup en top frame con opener disponible)
         try {
           window.opener.postMessage(
             gauthOk
@@ -54,22 +65,19 @@
               : { hslGauth: true, success: false, msg: gMsg },
             window.location.origin
           );
-        } catch (e) { /* cross-origin fallback no aplica aquí */ }
-        setTimeout(function () { window.close(); }, 200);
-        return; // No continuar con el resto del init
-      } else if (gauthOk && gToken && gNombre) {
-        // No hay opener (tab directa o popup ya cerrado): iniciar sesión directamente
-        session.save(gToken, gNombre);
-        showApp();
-        return;
-      } else {
-        // Error sin opener: mostrar login con mensaje
-        showLogin();
-        setTimeout(function () {
-          utils.setMsg('login-msg', gMsg, 'error');
-        }, 100);
+        } catch (e) {}
+        setTimeout(function () { window.close(); }, 300);
         return;
       }
+
+      // Sin opener: la SPA está en un iframe de Apps Script.
+      // La pestaña principal recogerá el resultado vía localStorage polling.
+      // Intentar cerrar la ventana (el popup padre puede cerrarlo también).
+      setTimeout(function () {
+        try { window.top.close(); } catch (e) {}
+        try { window.close(); } catch (e) {}
+      }, 300);
+      return;
     }
     // ─────────────────────────────────────────────────────────────────────
 
@@ -153,10 +161,10 @@
 
   window.doLoginGoogle = function () {
     utils.setMsg('login-msg', '', '');
+    // Limpiar cualquier resultado anterior para evitar falsos positivos
+    try { localStorage.removeItem('hsl_gauth_result'); } catch (e) {}
 
-    var authUrl = api.getGoogleAuthUrl()
-      + '&origin=' + encodeURIComponent(window.location.origin);
-
+    var authUrl = api.getGoogleAuthUrl();
     var w = 520, h = 620;
     var left = Math.round((screen.width  - w) / 2);
     var top  = Math.round((screen.height - h) / 2);
@@ -173,41 +181,65 @@
 
     utils.setMsg('login-msg', '⌛ Esperando autenticación de Google...', 'ok');
 
-    var handler = function (event) {
-      // Solo aceptar mensajes del mismo origen (la SPA redirige el popup de vuelta a sí misma)
-      if (event.origin !== window.location.origin) return;
-      var data = event.data || {};
-      if (!data.hslGauth) return; // Ignorar mensajes no relacionados con el login
-      window.removeEventListener('message', handler);
-      clearTimeout(timeout);
+    var done = false;
 
-      if (data.success) {
-        session.save(data.token, data.nombre);
+    // Función única de finalización — evita carreras entre los dos canales
+    var finish = function (success, token, nombre, msg) {
+      if (done) return;
+      done = true;
+      clearInterval(pollLocal);
+      clearInterval(pollClosed);
+      clearTimeout(timeout);
+      window.removeEventListener('message', handler);
+      try { localStorage.removeItem('hsl_gauth_result'); } catch (e) {}
+      try { if (popup && !popup.closed) popup.close(); } catch (e) {}
+
+      if (success) {
+        session.save(token, nombre);
         utils.setMsg('login-msg', '', '');
         showApp();
+      } else if (msg) {
+        utils.setMsg('login-msg', msg, 'error');
       } else {
-        utils.setMsg('login-msg', data.msg || 'Error en autenticación con Google.', 'error');
+        utils.setMsg('login-msg', '', '');
       }
     };
 
+    // Canal 1: postMessage (cuando el popup navega su top frame a GH Pages)
+    var handler = function (event) {
+      if (event.origin !== window.location.origin) return;
+      var data = event.data || {};
+      if (!data.hslGauth) return;
+      finish(data.success, data.token, data.nombre, data.msg);
+    };
     window.addEventListener('message', handler);
 
-    // Timeout por si el usuario cierra el popup sin completar
+    // Canal 2: localStorage polling (cuando el popup corre dentro del iframe de Apps Script)
+    var pollLocal = setInterval(function () {
+      try {
+        var raw = localStorage.getItem('hsl_gauth_result');
+        if (!raw) return;
+        var data = JSON.parse(raw);
+        // Ignorar resultados de más de 60 segundos (por si quedan en localStorage)
+        if (Date.now() - (data.ts || 0) > 60000) { localStorage.removeItem('hsl_gauth_result'); return; }
+        finish(data.success, data.token, data.nombre, data.msg || 'Error en autenticación con Google.');
+      } catch (e) {}
+    }, 500);
+
+    // Timeout (2 min) — si el usuario abandona sin completar
     var timeout = setTimeout(function () {
-      window.removeEventListener('message', handler);
-      if (!popup.closed) popup.close();
-      utils.setMsg('login-msg', '', '');
+      finish(false, '', '', '');
     }, 120000);
 
-    // Detectar si el popup se cerró manualmente
+    // Detectar si el popup se cerró manualmente (sin completar el flujo)
     var pollClosed = setInterval(function () {
-      if (popup.closed) {
+      if (popup && popup.closed) {
         clearInterval(pollClosed);
-        clearTimeout(timeout);
-        window.removeEventListener('message', handler);
-        // Solo limpiar si no hubo login exitoso
-        if (!session.isActive()) {
-          utils.setMsg('login-msg', '', '');
+        if (!done) {
+          // Esperar un tick por si localStorage acaba de escribirse
+          setTimeout(function () {
+            if (!done) finish(false, '', '', '');
+          }, 600);
         }
       }
     }, 500);

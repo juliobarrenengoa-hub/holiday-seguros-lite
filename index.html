@@ -208,23 +208,46 @@
         <input id="gestion-buscar" type="text" placeholder="Buscar en registros..." oninput="onGestionSearch()">
       </div>
 
+      <!-- Toolbar: selector de columnas + filtros fecha -->
+      <div class="filtros-toolbar">
+        <div class="columnas-panel-wrap">
+          <button class="btn btn-outline btn-small" id="btn-columnas" onclick="toggleColumnasPanel()">⚙ Columnas</button>
+          <div id="columnas-panel" class="columnas-panel hidden">
+            <div class="columnas-panel-header">
+              <span>Campos visibles</span>
+              <button class="btn-link" onclick="resetColumnas()">Restablecer</button>
+            </div>
+            <div id="columnas-lista" class="columnas-lista"></div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-small" id="btn-filtro-fecha" onclick="toggleFiltroFechaForm()">＋ Filtro fecha</button>
+        <div id="filtro-fecha-form" class="filtro-fecha-form hidden">
+          <select id="filtro-campo">
+            <option value="">— Campo —</option>
+            <option value="fecha_alta">Fecha alta</option>
+            <option value="f_pol">F. póliza</option>
+            <option value="vencimiento">Vencimiento</option>
+          </select>
+          <div class="filtro-fecha-inputs">
+            <label>Desde</label><input type="date" id="filtro-desde">
+            <label>Hasta</label><input type="date" id="filtro-hasta">
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-primary btn-small" onclick="aplicarFiltroFecha()">Aplicar</button>
+            <button class="btn btn-outline btn-small" onclick="toggleFiltroFechaForm()">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chips de filtros activos -->
+      <div id="filtros-activos" class="filtros-activos"></div>
+
       <div id="gestion-status" class="status-text"></div>
 
       <div id="gestion-results" class="hidden">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>DNI/CIF</th>
-                <th>Póliza</th>
-                <th>Ramo</th>
-                <th>Compañía</th>
-                <th>Matrícula</th>
-                <th style="text-align:right">Prima</th>
-                <th>Vencimiento</th>
-              </tr>
-            </thead>
+            <thead id="gestion-thead"></thead>
             <tbody id="gestion-tbody"></tbody>
           </table>
         </div>

@@ -6,6 +6,32 @@
   var $ = utils.$;
   var escapeHtml = utils.escapeHtml;
 
+  // ─── Columnas disponibles en gestión ────────────────────────────────────
+
+  var TODAS_COLUMNAS = [
+    { key: 'nombre_completo', label: 'Nombre',        defaultOn: true  },
+    { key: 'dni_cif',         label: 'DNI/CIF',       defaultOn: true  },
+    { key: 'n_poliza',        label: 'Nº Póliza',     defaultOn: true  },
+    { key: 'ramo',            label: 'Ramo',          defaultOn: true  },
+    { key: 'cia',             label: 'Compañía',      defaultOn: true  },
+    { key: 'matricula',       label: 'Matrícula',     defaultOn: true  },
+    { key: 'prima',           label: 'Prima',         defaultOn: true,  align: 'right' },
+    { key: 'vencimiento',     label: 'Vencimiento',   defaultOn: true  },
+    { key: 'fecha_alta',      label: 'Fecha alta',    defaultOn: false },
+    { key: 'f_pol',           label: 'F. póliza',     defaultOn: false },
+    { key: 'agente',          label: 'Agente',        defaultOn: false },
+    { key: 'tipo',            label: 'Tipo',          defaultOn: false },
+    { key: 'telefono',        label: 'Teléfono',      defaultOn: false },
+    { key: 'email',           label: 'Email',         defaultOn: false },
+    { key: 'domicilio',       label: 'Domicilio',     defaultOn: false },
+    { key: 'numero',          label: 'Número',        defaultOn: false },
+    { key: 'poblacion',       label: 'Población',     defaultOn: false },
+    { key: 'cp',              label: 'C.P.',          defaultOn: false },
+    { key: 'provincia',       label: 'Provincia',     defaultOn: false },
+    { key: 'c_corredor',      label: 'Cód. corredor', defaultOn: false },
+    { key: 'c_agente',        label: 'Cód. agente',   defaultOn: false }
+  ];
+
   // ─── State ──────────────────────────────────────────────────────────────
 
   var gestionData = [];
@@ -13,6 +39,8 @@
   var gestionPorPagina = 25;
   var gestionFiltros = [];
   var gestionBusqueda = '';
+  var gestionColsVisible = null;   // array de keys; null = no cargado aún
+  var gestionFiltrosFecha = [];    // [{campo, label, desde, hasta}]
   var searchTimer = null;
   var gestionSearchTimer = null;
   var polizaActual = null;
@@ -692,10 +720,142 @@
     el.innerHTML = html;
   }
 
+  // ─── Gestión — columnas ────────────────────────────────────────────────
+
+  function loadGestionCols() {
+    var saved = localStorage.getItem('hsl_gestion_cols');
+    if (saved) {
+      try { gestionColsVisible = JSON.parse(saved); return; } catch (e) {}
+    }
+    gestionColsVisible = TODAS_COLUMNAS.filter(function (c) { return c.defaultOn; }).map(function (c) { return c.key; });
+  }
+
+  function saveGestionCols() {
+    localStorage.setItem('hsl_gestion_cols', JSON.stringify(gestionColsVisible));
+  }
+
+  window.toggleColumnasPanel = function () {
+    var panel = $('columnas-panel');
+    var isHidden = panel.classList.contains('hidden');
+    if (isHidden) {
+      renderColumnasPanel();
+      panel.classList.remove('hidden');
+    } else {
+      panel.classList.add('hidden');
+    }
+  };
+
+  function renderColumnasPanel() {
+    if (!gestionColsVisible) loadGestionCols();
+    var lista = $('columnas-lista');
+    lista.innerHTML = TODAS_COLUMNAS.map(function (c) {
+      var checked = gestionColsVisible.indexOf(c.key) !== -1 ? ' checked' : '';
+      return '<label class="col-check-item"><input type="checkbox" value="' + escapeHtml(c.key) + '"' + checked + ' onchange="toggleColumna(this)"> ' + escapeHtml(c.label) + '</label>';
+    }).join('');
+  }
+
+  window.toggleColumna = function (cb) {
+    if (!gestionColsVisible) loadGestionCols();
+    var key = cb.value;
+    if (cb.checked) {
+      if (gestionColsVisible.indexOf(key) === -1) {
+        // Insertar en el orden de TODAS_COLUMNAS
+        var insertAt = gestionColsVisible.length;
+        TODAS_COLUMNAS.forEach(function (c, i) {
+          if (c.key === key) {
+            var insertIdx = 0;
+            TODAS_COLUMNAS.slice(0, i).forEach(function (prev) {
+              var pos = gestionColsVisible.indexOf(prev.key);
+              if (pos !== -1) insertIdx = pos + 1;
+            });
+            insertAt = insertIdx;
+          }
+        });
+        gestionColsVisible.splice(insertAt, 0, key);
+      }
+    } else {
+      gestionColsVisible = gestionColsVisible.filter(function (k) { return k !== key; });
+    }
+    saveGestionCols();
+    gestionPagina = 1;
+    renderGestion();
+  };
+
+  window.resetColumnas = function () {
+    gestionColsVisible = TODAS_COLUMNAS.filter(function (c) { return c.defaultOn; }).map(function (c) { return c.key; });
+    saveGestionCols();
+    renderColumnasPanel();
+    gestionPagina = 1;
+    renderGestion();
+  };
+
+  // Cerrar panel de columnas al hacer clic fuera
+  document.addEventListener('click', function (e) {
+    var panel = $('columnas-panel');
+    var btn = $('btn-columnas');
+    if (!panel || panel.classList.contains('hidden')) return;
+    if (!panel.contains(e.target) && e.target !== btn) {
+      panel.classList.add('hidden');
+    }
+  });
+
+  // ─── Gestión — filtros fecha ───────────────────────────────────────────
+
+  window.toggleFiltroFechaForm = function () {
+    var form = $('filtro-fecha-form');
+    var isHidden = form.classList.contains('hidden');
+    if (isHidden) {
+      $('filtro-campo').value = '';
+      $('filtro-desde').value = '';
+      $('filtro-hasta').value = '';
+      form.classList.remove('hidden');
+    } else {
+      form.classList.add('hidden');
+    }
+  };
+
+  window.aplicarFiltroFecha = function () {
+    var campo = $('filtro-campo').value;
+    if (!campo) { utils.setMsg('gestion-status', 'Selecciona el campo fecha.', 'error'); return; }
+    var desde = $('filtro-desde').value;
+    var hasta = $('filtro-hasta').value;
+    if (!desde && !hasta) { utils.setMsg('gestion-status', 'Indica al menos una fecha (desde o hasta).', 'error'); return; }
+
+    var labelMap = { fecha_alta: 'Fecha alta', f_pol: 'F. póliza', vencimiento: 'Vencimiento' };
+    gestionFiltrosFecha.push({ campo: campo, label: labelMap[campo] || campo, desde: desde, hasta: hasta });
+    $('filtro-fecha-form').classList.add('hidden');
+    gestionPagina = 1;
+    renderGestion();
+  };
+
+  window.quitarFiltroFecha = function (idx) {
+    gestionFiltrosFecha.splice(Number(idx), 1);
+    gestionPagina = 1;
+    renderGestion();
+  };
+
+  function renderFiltroChips() {
+    var container = $('filtros-activos');
+    if (!container) return;
+    if (!gestionFiltrosFecha.length) { container.innerHTML = ''; return; }
+    container.innerHTML = gestionFiltrosFecha.map(function (f, i) {
+      var txt = f.label;
+      if (f.desde && f.hasta) txt += ': ' + f.desde + ' → ' + f.hasta;
+      else if (f.desde) txt += ': desde ' + f.desde;
+      else if (f.hasta) txt += ': hasta ' + f.hasta;
+      return '<span class="filtro-chip">' + escapeHtml(txt) + ' <button onclick="quitarFiltroFecha(' + i + ')" title="Quitar filtro">✕</button></span>';
+    }).join('');
+  }
+
   // ─── Gestión ──────────────────────────────────────────────────────────
 
   function initGestion() {
+    if (!gestionColsVisible) loadGestionCols();
     gestionPagina = 1;
+    gestionFiltrosFecha = [];
+    gestionBusqueda = '';
+    var buscarInput = $('gestion-buscar');
+    if (buscarInput) buscarInput.value = '';
     $('gestion-status').textContent = 'Cargando registros...';
     $('gestion-tbody').innerHTML = '';
     utils.hide('gestion-results');
@@ -724,14 +884,33 @@
   };
 
   function filtrarGestion() {
-    if (!gestionBusqueda) return gestionData;
-    return gestionData.filter(function (r) {
-      var texto = [r.nombre_completo, r.dni_cif, r.n_poliza, r.ramo, r.cia, r.matricula, r.poblacion, r.telefono, r.email].join(' ').toLowerCase();
-      return texto.indexOf(gestionBusqueda) !== -1;
+    var result = gestionData;
+
+    // Búsqueda de texto
+    if (gestionBusqueda) {
+      result = result.filter(function (r) {
+        var texto = [r.nombre_completo, r.dni_cif, r.n_poliza, r.ramo, r.cia, r.matricula, r.poblacion, r.telefono, r.email].join(' ').toLowerCase();
+        return texto.indexOf(gestionBusqueda) !== -1;
+      });
+    }
+
+    // Filtros por fecha (AND)
+    gestionFiltrosFecha.forEach(function (f) {
+      result = result.filter(function (r) {
+        var val = String(r[f.campo] || '').trim().slice(0, 10); // normaliza a YYYY-MM-DD
+        if (!val) return false;
+        if (f.desde && val < f.desde) return false;
+        if (f.hasta && val > f.hasta) return false;
+        return true;
+      });
     });
+
+    return result;
   }
 
   function renderGestion() {
+    if (!gestionColsVisible) loadGestionCols();
+
     var filtered = filtrarGestion();
     var total = filtered.length;
     var totalPages = Math.max(1, Math.ceil(total / gestionPorPagina));
@@ -740,6 +919,16 @@
     var start = (gestionPagina - 1) * gestionPorPagina;
     var page = filtered.slice(start, start + gestionPorPagina);
 
+    // Columnas activas (respeta el orden de TODAS_COLUMNAS)
+    var activeCols = TODAS_COLUMNAS.filter(function (c) { return gestionColsVisible.indexOf(c.key) !== -1; });
+
+    // Thead dinámico
+    var thead = $('gestion-thead');
+    thead.innerHTML = '<tr>' + activeCols.map(function (c) {
+      return '<th' + (c.align ? ' style="text-align:' + c.align + '"' : '') + '>' + escapeHtml(c.label) + '</th>';
+    }).join('') + '</tr>';
+
+    // Tbody
     var tbody = $('gestion-tbody');
     tbody.innerHTML = '';
     utils.show('gestion-results');
@@ -747,20 +936,17 @@
     page.forEach(function (r) {
       var tr = document.createElement('tr');
       tr.className = 'clickable';
-      tr.innerHTML = '<td>' + escapeHtml(r.nombre_completo) + '</td>'
-        + '<td>' + escapeHtml(r.dni_cif) + '</td>'
-        + '<td>' + escapeHtml(r.n_poliza) + '</td>'
-        + '<td>' + escapeHtml(r.ramo) + '</td>'
-        + '<td>' + escapeHtml(r.cia) + '</td>'
-        + '<td>' + escapeHtml(r.matricula) + '</td>'
-        + '<td style="text-align:right">' + escapeHtml(r.prima) + '</td>'
-        + '<td>' + escapeHtml(r.vencimiento) + '</td>';
+      tr.innerHTML = activeCols.map(function (c) {
+        var val = escapeHtml(String(r[c.key] != null ? r[c.key] : ''));
+        return '<td' + (c.align ? ' style="text-align:' + c.align + '"' : '') + '>' + val + '</td>';
+      }).join('');
       tr.addEventListener('click', function () { abrirFicha(r); });
       tbody.appendChild(tr);
     });
 
-    $('gestion-info').textContent = 'Mostrando ' + (start + 1) + '-' + Math.min(start + gestionPorPagina, total) + ' de ' + total;
+    $('gestion-info').textContent = 'Mostrando ' + (total ? start + 1 : 0) + '-' + Math.min(start + gestionPorPagina, total) + ' de ' + total;
     renderPagination(totalPages);
+    renderFiltroChips();
   }
 
   function renderPagination(totalPages) {
@@ -804,11 +990,13 @@
     var filtered = filtrarGestion();
     if (!filtered.length) { alert('No hay datos para exportar.'); return; }
 
-    var headers = ['Nombre', 'DNI/CIF', 'Nº Póliza', 'Ramo', 'Compañía', 'Matrícula', 'Prima', 'Vencimiento', 'Teléfono', 'Email', 'Población', 'CP', 'Provincia'];
+    // CSV exporta siempre todos los campos (independiente de las columnas visibles)
+    var headers = ['Nombre', 'DNI/CIF', 'Nº Póliza', 'Ramo', 'Compañía', 'Matrícula', 'Prima', 'Vencimiento', 'Fecha alta', 'F. póliza', 'Agente', 'Tipo', 'Teléfono', 'Email', 'Domicilio', 'Número', 'Población', 'CP', 'Provincia', 'Cód. corredor', 'Cód. agente'];
+    var fields  = ['nombre_completo', 'dni_cif', 'n_poliza', 'ramo', 'cia', 'matricula', 'prima', 'vencimiento', 'fecha_alta', 'f_pol', 'agente', 'tipo', 'telefono', 'email', 'domicilio', 'numero', 'poblacion', 'cp', 'provincia', 'c_corredor', 'c_agente'];
+
     var csv = '﻿' + headers.join(';') + '\n';
     filtered.forEach(function (r) {
-      csv += [r.nombre_completo, r.dni_cif, r.n_poliza, r.ramo, r.cia, r.matricula, r.prima, r.vencimiento, r.telefono, r.email, r.poblacion, r.cp, r.provincia]
-        .map(utils.csvEscape).join(';') + '\n';
+      csv += fields.map(function (f) { return utils.csvEscape(r[f] != null ? r[f] : ''); }).join(';') + '\n';
     });
 
     var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

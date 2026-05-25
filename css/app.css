@@ -967,6 +967,178 @@ table tbody tr.clickable {
   display: none;
 }
 
+/* ─── FILTROS TOOLBAR ────────────────────────────────────────────────────── */
+
+.filtros-toolbar {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+/* Envoltorio del panel de columnas (para posicionamiento relativo) */
+.columnas-panel-wrap {
+  position: relative;
+}
+
+/* Panel flotante de selección de columnas */
+.columnas-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+  min-width: 260px;
+  max-width: 340px;
+  padding: 12px 14px 14px;
+}
+
+.columnas-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  text-decoration: underline;
+}
+.btn-link:hover { color: var(--primary-dark); }
+
+.columnas-lista {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+}
+
+.col-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text);
+  cursor: pointer;
+  padding: 3px 2px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.col-check-item:hover { background: #f0f4f8; }
+.col-check-item input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Formulario de filtro por fecha */
+.filtro-fecha-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+}
+
+.filtro-fecha-form select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+}
+.filtro-fecha-form select:focus { border-color: var(--primary); }
+
+.filtro-fecha-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filtro-fecha-inputs label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.filtro-fecha-inputs input[type="date"] {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+}
+.filtro-fecha-inputs input[type="date"]:focus { border-color: var(--primary); }
+
+/* Chips de filtros activos */
+.filtros-activos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 0;
+}
+
+.filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(21,101,192,0.08);
+  border: 1px solid rgba(21,101,192,0.22);
+  border-radius: 999px;
+  padding: 4px 10px 4px 12px;
+  font-size: 0.82rem;
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+.filtro-chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--primary-dark);
+  font-size: 0.85rem;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+.filtro-chip button:hover { opacity: 1; }
+
 /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {

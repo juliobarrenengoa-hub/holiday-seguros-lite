@@ -322,7 +322,7 @@
             <div class="form-section-title">Datos del seguro</div>
             <div class="form-row-4">
               <div class="form-field"><label>Nº Póliza *</label><input id="f-n-poliza" type="text" maxlength="30" required></div>
-              <div class="form-field"><label>Fecha póliza *</label><input id="f-fecha-pol" type="date" required></div>
+              <div class="form-field"><label>Fecha póliza *</label><input id="f-fecha-pol" type="date" required onchange="autoVencimiento()"></div>
               <div class="form-field"><label>Ramo *</label><select id="f-ramo" required><option value="">- Seleccionar -</option></select></div>
               <div class="form-field"><label>Compañía *</label><select id="f-cia" required><option value="">- Seleccionar -</option></select></div>
             </div>

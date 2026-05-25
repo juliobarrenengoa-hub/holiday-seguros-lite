@@ -64,6 +64,21 @@
   };
 
   /**
+   * Vencimiento: rellena con la fecha póliza + 1 año.
+   * Si el campo vencimiento ya tiene valor no lo sobreescribe (permite cambio manual).
+   */
+  window.autoVencimiento = function () {
+    var fechaPol = $('f-fecha-pol').value;
+    if (!fechaPol) return;
+    var vencEl = $('f-vencimiento');
+    // Auto-rellena solo si vencimiento está vacío
+    if (vencEl.value) return;
+    var d = new Date(fechaPol + 'T00:00:00');
+    d.setFullYear(d.getFullYear() + 1);
+    vencEl.value = d.toISOString().slice(0, 10);
+  };
+
+  /**
    * Importe en euros: acepta "1500", "1500.5", "1500,50", "1.500,50" → "1.500,00 €".
    * Vacío se deja vacío. No sobreescribe si ya está formateado.
    */
@@ -531,6 +546,26 @@
         $(campos[i]).focus();
         return;
       }
+    }
+
+    // Auto-formatear antes de validar (cubre el caso de no haber salido del campo)
+    autoFormatMatricula($('f-matricula'));
+    autoFormatMoneda($('f-prima'));
+    autoFormatMoneda($('f-c-corredor'));
+    autoFormatMoneda($('f-c-agente'));
+
+    // Validar formato matrícula: exactamente 4 dígitos + espacio + 3 letras mayúsculas
+    if (!/^\d{4} [A-Z]{3}$/.test($('f-matricula').value.trim())) {
+      utils.setMsg('form-msg', 'Matrícula no válida. Formato: 4 números + 3 letras (ej. 1234 ABC).', 'error');
+      $('f-matricula').focus();
+      return;
+    }
+
+    // Validar formato email
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($('f-email').value.trim())) {
+      utils.setMsg('form-msg', 'El email no tiene un formato válido.', 'error');
+      $('f-email').focus();
+      return;
     }
 
     var datos = {

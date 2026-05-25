@@ -103,6 +103,26 @@
     input.value = entero + ',' + partes[1] + ' €';
   };
 
+  /**
+   * Convierte "1.500,00 €" (o variantes) → float.
+   * Devuelve 0 si el valor no es numérico.
+   */
+  function _parseMoneda(val) {
+    if (!val) return 0;
+    var s = String(val).replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+    var n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  /**
+   * Convierte un número float → "1.500,00 €".
+   */
+  function _formatMonedaNum(num) {
+    var partes = num.toFixed(2).split('.');
+    var entero = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return entero + ',' + partes[1] + ' €';
+  }
+
   // ─── Init ───────────────────────────────────────────────────────────────
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -1334,6 +1354,30 @@
       tr.addEventListener('click', function () { abrirFicha(r); });
       tbody.appendChild(tr);
     });
+
+    // ── Tfoot: totales de columnas numéricas (sobre el conjunto filtrado completo) ─
+    var tfoot = $('gestion-tfoot');
+    tfoot.innerHTML = '';
+    var numCols = activeCols.filter(function (c) { return c.numeric; });
+    if (numCols.length && filtered.length) {
+      var sums = {};
+      numCols.forEach(function (c) { sums[c.key] = 0; });
+      filtered.forEach(function (r) {
+        numCols.forEach(function (c) { sums[c.key] += _parseMoneda(r[c.key]); });
+      });
+      var tfootRow = document.createElement('tr');
+      activeCols.forEach(function (c, idx) {
+        var td = document.createElement('td');
+        if (c.align) td.style.textAlign = c.align;
+        if (idx === 0) {
+          td.innerHTML = '<span class="tfoot-label">Total (' + filtered.length + ')</span>';
+        } else if (c.numeric) {
+          td.innerHTML = '<span class="tfoot-sum">' + _formatMonedaNum(sums[c.key]) + '</span>';
+        }
+        tfootRow.appendChild(td);
+      });
+      tfoot.appendChild(tfootRow);
+    }
 
     $('gestion-info').textContent = 'Mostrando ' + (total ? start + 1 : 0) + '-' + Math.min(start + gestionPorPagina, total) + ' de ' + total;
     renderPagination(totalPages);

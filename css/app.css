@@ -1270,6 +1270,31 @@ table tbody tr.clickable {
 }
 .docs-upload-status:not(:empty) { display: block; }
 
+/* ─── GESTIÓN TFOOT TOTALES ──────────────────────────────────────────────── */
+
+#gestion-tfoot tr {
+  background: rgba(21,101,192,0.05);
+}
+
+#gestion-tfoot td {
+  border-top: 2px solid var(--primary-light);
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.tfoot-label {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.tfoot-sum {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
 /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {

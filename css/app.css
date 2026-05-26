@@ -1004,6 +1004,36 @@ table tbody tr.clickable {
 .badge-activo.si { background: #e8f5e9; color: var(--success); }
 .badge-activo.no { background: #ffebee; color: var(--danger); }
 
+/* Selector Activo / Inactivo en tablas de catálogo */
+.cat-estado-sel {
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 999px;
+  padding: 3px 26px 3px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  border: 1px solid transparent;
+  /* chevron inline SVG */
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.cat-estado-sel.activo {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-color: #a5d6a7;
+}
+.cat-estado-sel.inactivo {
+  background-color: #f5f5f5;
+  color: #757575;
+  border-color: #e0e0e0;
+}
+
 /* ─── DOCS ───────────────────────────────────────────────────────────────── */
 
 .doc-list {

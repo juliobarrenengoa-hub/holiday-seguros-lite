@@ -1523,20 +1523,49 @@
   function renderCatalogoTabla(tbodyId, items, tipo) {
     var tbody = $(tbodyId);
     tbody.innerHTML = '';
+    var msgId = tipo === 'RAMO' ? 'cat-ramo-msg' : 'cat-cia-msg';
     var sorted = (items || []).slice().sort(function (a, b) {
       return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
     });
     sorted.forEach(function (item) {
       var tr = document.createElement('tr');
+      var estadoClass = item.activo ? 'activo' : 'inactivo';
       tr.innerHTML = '<td>' + escapeHtml(item.nombre) + '</td>'
-        + '<td><span class="badge-activo ' + (item.activo ? 'si' : 'no') + '">' + (item.activo ? 'Activo' : 'Inactivo') + '</span></td>'
-        + '<td>' + (item.activo ? '<button class="btn-trash" title="Dar de baja"><svg class="ico"><use href="#ico-trash"/></svg></button>' : '') + '</td>';
-      var bajaBtn = tr.querySelector('.btn-trash');
-      if (bajaBtn) {
-        bajaBtn.addEventListener('click', function () {
-          bajaCatalogoItem(tipo, item.id, item.nombre);
+        + '<td><select class="cat-estado-sel ' + estadoClass + '">'
+        + '<option value="activo"'  + (item.activo  ? ' selected' : '') + '>Activo</option>'
+        + '<option value="inactivo"' + (!item.activo ? ' selected' : '') + '>Inactivo</option>'
+        + '</select></td>';
+
+      var sel = tr.querySelector('.cat-estado-sel');
+      sel.addEventListener('change', function () {
+        var nuevo = sel.value;
+        sel.className = 'cat-estado-sel ' + nuevo;
+        sel.disabled = true;
+
+        var promise = nuevo === 'inactivo'
+          ? api.bajaCatalogo(session.token(), tipo, item.id)
+          : api.guardarCatalogo(session.token(), tipo, item.nombre); // reactiva si ya existe inactivo
+
+        promise.then(function (res) {
+          sel.disabled = false;
+          utils.setMsg(msgId, res.msg, res.success ? 'ok' : 'error');
+          if (res.success) {
+            item.activo = (nuevo === 'activo');
+          } else {
+            // revertir visualmente si falló
+            var anterior = nuevo === 'activo' ? 'inactivo' : 'activo';
+            sel.value = anterior;
+            sel.className = 'cat-estado-sel ' + anterior;
+          }
+        }).catch(function (err) {
+          sel.disabled = false;
+          var anterior = nuevo === 'activo' ? 'inactivo' : 'activo';
+          sel.value = anterior;
+          sel.className = 'cat-estado-sel ' + anterior;
+          utils.setMsg(msgId, 'Error: ' + err.message, 'error');
         });
-      }
+      });
+
       tbody.appendChild(tr);
     });
   }
@@ -1558,15 +1587,6 @@
       if (res.success) { $('cat-cia-input').value = ''; initCatalogo(); }
     }).catch(function (err) { utils.setMsg('cat-cia-msg', 'Error: ' + err.message, 'error'); });
   };
-
-  function bajaCatalogoItem(tipo, id, nombre) {
-    if (!confirm('¿Dar de baja "' + nombre + '"?')) return;
-    var msgId = tipo === 'RAMO' ? 'cat-ramo-msg' : 'cat-cia-msg';
-    api.bajaCatalogo(session.token(), tipo, id).then(function (res) {
-      utils.setMsg(msgId, res.msg, res.success ? 'ok' : 'error');
-      if (res.success) initCatalogo();
-    }).catch(function (err) { utils.setMsg(msgId, 'Error: ' + err.message, 'error'); });
-  }
 
   // ─── Helpers ──────────────────────────────────────────────────────────
 

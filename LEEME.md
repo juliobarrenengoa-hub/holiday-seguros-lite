@@ -192,3 +192,22 @@ La aplicación ya está configurada como **PWA (Progressive Web App)**, lo que p
 | Datos pólizas | Google Sheets ID `1RQqu-cvNfY6AzhJb-o33BAxNpTDZaUxVYWamfp63mU0` |
 | Datos usuarios | Google Sheets ID `1ydE0Ks4rew8RLf6IRqu8DPGMBZmOJd64fkqqLj80AOU` |
 | Publicar cambios | `git push` desde Terminal |
+
+---
+
+## 7. Actualizar la app en los dispositivos de los usuarios
+
+**No tienes que hacer nada en los dispositivos de los usuarios.** La actualización es automática:
+
+1. Haces `git push` en tu Mac → GitHub Pages actualiza la URL pública en 1-2 minutos.
+2. La próxima vez que el usuario abra la app (desde el navegador o desde el icono instalado), el navegador detecta la nueva versión y la descarga en segundo plano.
+3. Al cerrar y volver a abrir la app, ya tienen la versión actualizada.
+
+### Si un usuario sigue viendo la versión antigua
+Basta con que cierre completamente la app y la vuelva a abrir. Si persiste:
+- **Móvil**: mantener pulsado el icono → cerrar → volver a abrir
+- **Ordenador**: cerrar la ventana de la app → volver a abrirla desde el icono del escritorio
+- **Navegador**: `Ctrl+Shift+R` (Windows) o `Cmd+Shift+R` (Mac) para forzar recarga sin caché
+
+### Importante: el backend (Apps Script) es independiente
+Si el cambio afecta al backend (`Código.gs`), además del `git push` debes redesplegar el Apps Script (ver punto 5). Ese cambio también es instantáneo para todos los usuarios una vez desplegado.

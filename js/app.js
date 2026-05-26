@@ -1523,7 +1523,10 @@
   function renderCatalogoTabla(tbodyId, items, tipo) {
     var tbody = $(tbodyId);
     tbody.innerHTML = '';
-    (items || []).forEach(function (item) {
+    var sorted = (items || []).slice().sort(function (a, b) {
+      return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+    });
+    sorted.forEach(function (item) {
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>' + escapeHtml(item.nombre) + '</td>'
         + '<td><span class="badge-activo ' + (item.activo ? 'si' : 'no') + '">' + (item.activo ? 'Activo' : 'Inactivo') + '</span></td>'

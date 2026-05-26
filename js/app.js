@@ -234,15 +234,19 @@
     }, 300);
   };
 
+  var SVG_EYE     = '<svg class="ico"><use href="#ico-eye"/></svg>';
+  var SVG_EYE_OFF = '<svg class="ico"><use href="#ico-eye-off"/></svg>';
+  var SVG_TRASH   = '<svg class="ico"><use href="#ico-trash"/></svg>';
+
   window.toggleLoginPass = function () {
     var input = $('login-pass');
     var icon = $('login-eye');
     if (input.type === 'password') {
       input.type = 'text';
-      icon.textContent = '🙈';
+      icon.innerHTML = SVG_EYE_OFF;
     } else {
       input.type = 'password';
-      icon.textContent = '👁️';
+      icon.innerHTML = SVG_EYE;
     }
   };
 
@@ -352,10 +356,10 @@
     var input = $(inputId);
     if (input.type === 'password') {
       input.type = 'text';
-      btn.textContent = '🙈';
+      btn.innerHTML = SVG_EYE_OFF;
     } else {
       input.type = 'password';
-      btn.textContent = '👁️';
+      btn.innerHTML = SVG_EYE;
     }
   };
 
@@ -938,7 +942,7 @@
       var delBtn = document.createElement('button');
       delBtn.className = 'docs-item-delete';
       delBtn.title = 'Eliminar';
-      delBtn.textContent = '🗑️';
+      delBtn.innerHTML = SVG_TRASH;
       delBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         docsEliminarArchivo(a.id, a.nombre);
@@ -966,7 +970,7 @@
       var delBtn = document.createElement('button');
       delBtn.className = 'docs-item-delete';
       delBtn.title = 'Quitar';
-      delBtn.textContent = '🗑️';
+      delBtn.innerHTML = SVG_TRASH;
       (function (i) {
         delBtn.addEventListener('click', function (e) {
           e.stopPropagation();
@@ -1523,7 +1527,7 @@
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>' + escapeHtml(item.nombre) + '</td>'
         + '<td><span class="badge-activo ' + (item.activo ? 'si' : 'no') + '">' + (item.activo ? 'Activo' : 'Inactivo') + '</span></td>'
-        + '<td>' + (item.activo ? '<button class="btn-trash" title="Dar de baja">🗑️</button>' : '') + '</td>';
+        + '<td>' + (item.activo ? '<button class="btn-trash" title="Dar de baja"><svg class="ico"><use href="#ico-trash"/></svg></button>' : '') + '</td>';
       var bajaBtn = tr.querySelector('.btn-trash');
       if (bajaBtn) {
         bajaBtn.addEventListener('click', function () {

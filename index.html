@@ -17,6 +17,30 @@
 </head>
 <body>
 
+<!-- ═══ SVG ICON SPRITE ═══════════════════════════════════════════════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="ico-home"     viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="ico-plus"     viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ico-list"     viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+  <symbol id="ico-chart"    viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></symbol>
+  <symbol id="ico-book"     viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+  <symbol id="ico-trash"    viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+  <symbol id="ico-key"      viewBox="0 0 24 24"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+  <symbol id="ico-logout"   viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <symbol id="ico-refresh"  viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+  <symbol id="ico-star"     viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+  <symbol id="ico-folder"   viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="ico-save"     viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+  <symbol id="ico-alert"    viewBox="0 0 24 24"><path d="m10.29 3.86-8.47 14.28A2 2 0 0 0 3.54 21H20.46a2 2 0 0 0 1.72-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="ico-x"        viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="ico-eye"      viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="ico-eye-off"  viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></symbol>
+  <symbol id="ico-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="ico-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="ico-upload"   viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></symbol>
+  <symbol id="ico-back"     viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+</svg>
+
 <!-- ═══ CONFIG ═══════════════════════════════════════════════════════════ -->
 <div id="view-config" class="hidden">
   <div class="login-wrapper">
@@ -56,7 +80,7 @@
         <label for="login-pass">Contraseña</label>
         <div class="password-wrapper">
           <input id="login-pass" type="password" autocomplete="current-password" placeholder="Tu contraseña">
-          <button id="login-eye" type="button" class="toggle-pass" onclick="toggleLoginPass()">👁️</button>
+          <button id="login-eye" type="button" class="toggle-pass" onclick="toggleLoginPass()"><svg class="ico"><use href="#ico-eye"/></svg></button>
         </div>
       </div>
 
@@ -99,21 +123,41 @@
 
   <!-- NAV -->
   <nav class="app-nav">
-    <span class="brand">Holiday Seguros</span>
-    <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+    <span class="brand">
+      <img src="img/icon-192.png" class="nav-logo" alt="">
+      Holiday Seguros
+    </span>
+    <button class="hamburger" onclick="toggleMobileMenu()">
+      <svg class="ico" style="width:1.3em;height:1.3em"><use href="#ico-list"/></svg>
+    </button>
     <div class="nav-links">
-      <button data-view="inicio" onclick="navigateTo('inicio')">Inicio</button>
-      <button data-view="dashboard" onclick="navigateTo('dashboard')">Dashboard</button>
-      <button data-view="gestion" onclick="navigateTo('gestion')">Gestión</button>
-      <button data-view="catalogo" onclick="navigateTo('catalogo')">Catálogos</button>
+      <button data-view="inicio"     onclick="navigateTo('inicio')">
+        <svg class="ico"><use href="#ico-home"/></svg> Inicio
+      </button>
+      <button data-view="altanueva"  onclick="goAltaNueva()">
+        <svg class="ico"><use href="#ico-plus"/></svg> Alta Nueva
+      </button>
+      <button data-view="gestion"    onclick="navigateTo('gestion')">
+        <svg class="ico"><use href="#ico-list"/></svg> Gestión
+      </button>
+      <button data-view="dashboard"  onclick="navigateTo('dashboard')">
+        <svg class="ico"><use href="#ico-chart"/></svg> Dashboard
+      </button>
+      <button data-view="catalogo"   onclick="navigateTo('catalogo')">
+        <svg class="ico"><use href="#ico-book"/></svg> Catálogos
+      </button>
     </div>
     <div class="nav-right">
       <div class="user-menu-wrap" id="user-menu-wrap">
         <button id="nav-user" class="user-badge" onclick="toggleUserMenu()"></button>
         <div id="user-dropdown" class="user-dropdown hidden">
-          <button onclick="openCambioPasswordApp()">🔑 Cambiar contraseña</button>
+          <button onclick="openCambioPasswordApp()">
+            <svg class="ico"><use href="#ico-key"/></svg> Cambiar contraseña
+          </button>
           <hr class="dropdown-sep">
-          <button onclick="doLogout()">⬡ Cerrar sesión</button>
+          <button onclick="doLogout()">
+            <svg class="ico"><use href="#ico-logout"/></svg> Cerrar sesión
+          </button>
         </div>
       </div>
     </div>
@@ -125,19 +169,19 @@
     <div id="view-inicio" class="app-view">
       <div class="menu-grid">
         <button class="menu-btn" onclick="goAltaNueva()">
-          <span class="icon">📋</span>
+          <span class="icon"><svg class="ico"><use href="#ico-plus"/></svg></span>
           <span class="label">Alta nueva</span>
         </button>
         <button class="menu-btn" onclick="navigateTo('gestion')">
-          <span class="icon">📂</span>
+          <span class="icon"><svg class="ico"><use href="#ico-list"/></svg></span>
           <span class="label">Gestión</span>
         </button>
         <button class="menu-btn" onclick="navigateTo('dashboard')">
-          <span class="icon">📊</span>
+          <span class="icon"><svg class="ico"><use href="#ico-chart"/></svg></span>
           <span class="label">Dashboard</span>
         </button>
         <button class="menu-btn" onclick="navigateTo('catalogo')">
-          <span class="icon">📚</span>
+          <span class="icon"><svg class="ico"><use href="#ico-book"/></svg></span>
           <span class="label">Catálogos</span>
         </button>
       </div>
@@ -147,7 +191,7 @@
     <!-- ─── DASHBOARD ──────────────────────────────────────────────────── -->
     <div id="view-dashboard" class="app-view">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-        <h2 class="section-title" style="margin:0">📊 Dashboard</h2>
+        <h2 class="section-title" style="margin:0"><svg class="ico"><use href="#ico-chart"/></svg> Dashboard</h2>
         <div class="dash-filter-bar">
           <span class="dash-filter-label">Agente:</span>
           <select id="dash-agente-select" onchange="onDashAgenteChange()">
@@ -181,10 +225,10 @@
     <!-- ─── GESTIÓN ────────────────────────────────────────────────────── -->
     <div id="view-gestion" class="app-view">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-        <h2 class="section-title" style="margin:0">📂 Gestión de pólizas</h2>
+        <h2 class="section-title" style="margin:0"><svg class="ico"><use href="#ico-list"/></svg> Gestión de pólizas</h2>
         <div class="btn-group">
-          <button class="btn btn-primary btn-small" onclick="goAltaNueva()">+ Alta nueva</button>
-          <button class="btn btn-outline btn-small" onclick="exportarExcel()">Exportar CSV</button>
+          <button class="btn btn-primary btn-small" onclick="goAltaNueva()"><svg class="ico"><use href="#ico-plus"/></svg> Alta nueva</button>
+          <button class="btn btn-outline btn-small" onclick="exportarExcel()"><svg class="ico"><use href="#ico-download"/></svg> Exportar CSV</button>
         </div>
       </div>
 
@@ -195,7 +239,7 @@
       <!-- Toolbar: selector de columnas + filtros fecha -->
       <div class="filtros-toolbar">
         <div class="columnas-panel-wrap">
-          <button class="btn btn-outline btn-small" id="btn-columnas" onclick="toggleColumnasPanel()">⚙ Columnas</button>
+          <button class="btn btn-outline btn-small" id="btn-columnas" onclick="toggleColumnasPanel()"><svg class="ico"><use href="#ico-settings"/></svg> Columnas</button>
           <div id="columnas-panel" class="columnas-panel hidden">
             <div class="columnas-panel-header">
               <span>Campos visibles</span>
@@ -343,9 +387,9 @@
           <div id="form-msg" class="msg" style="margin-top:16px"></div>
 
           <div class="btn-group" style="margin-top:20px">
-            <button id="btn-guardar" type="button" class="btn btn-primary" onclick="guardarPoliza()">Guardar</button>
-            <button id="btn-baja" type="button" class="btn btn-danger hidden" onclick="darBaja()">Dar de baja</button>
-            <button type="button" class="btn btn-outline" onclick="limpiarFormulario()">Limpiar</button>
+            <button id="btn-guardar" type="button" class="btn btn-primary" onclick="guardarPoliza()"><svg class="ico"><use href="#ico-save"/></svg> Guardar</button>
+            <button id="btn-baja" type="button" class="btn btn-danger hidden" onclick="darBaja()"><svg class="ico"><use href="#ico-alert"/></svg> Dar de baja</button>
+            <button type="button" class="btn btn-outline" onclick="limpiarFormulario()"><svg class="ico"><use href="#ico-x"/></svg> Limpiar</button>
           </div>
         </form>
       </div>
@@ -355,15 +399,15 @@
     <div id="view-documentos" class="app-view">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-          <h2 class="card-title" style="margin:0">📁 Expediente documental</h2>
-          <button class="btn btn-outline btn-small" onclick="volverDesdeDocumentos()">← Volver a ficha</button>
+          <h2 class="card-title" style="margin:0"><svg class="ico"><use href="#ico-folder"/></svg> Expediente documental</h2>
+          <button class="btn btn-outline btn-small" onclick="volverDesdeDocumentos()"><svg class="ico"><use href="#ico-back"/></svg> Volver a ficha</button>
         </div>
 
         <input type="hidden" id="docs-url">
 
         <div style="margin-bottom:16px">
           <input id="docs-file-input" type="file" multiple style="margin-right:8px">
-          <button class="btn btn-primary btn-small" onclick="subirDocs()">Subir archivos</button>
+          <button class="btn btn-primary btn-small" onclick="subirDocs()"><svg class="ico"><use href="#ico-upload"/></svg> Subir archivos</button>
         </div>
 
         <div id="docs-status" class="status-text"></div>
@@ -374,10 +418,10 @@
     <!-- ─── CATÁLOGOS ──────────────────────────────────────────────────── -->
     <div id="view-catalogo" class="app-view">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-        <h2 class="section-title" style="margin:0">📚 Catálogos</h2>
+        <h2 class="section-title" style="margin:0"><svg class="ico"><use href="#ico-book"/></svg> Catálogos</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-small" onclick="sincronizarCatalogos()" title="Añade al catálogo los ramos y compañías presentes en las pólizas">🔄 Sincronizar desde pólizas</button>
-          <button class="btn btn-outline btn-small" onclick="poblarCatalogosDefecto()" title="Añade ramos y compañías estándar del mercado asegurador español">✨ Cargar predeterminados</button>
+          <button class="btn btn-outline btn-small" onclick="sincronizarCatalogos()" title="Añade al catálogo los ramos y compañías presentes en las pólizas"><svg class="ico"><use href="#ico-refresh"/></svg> Sincronizar desde pólizas</button>
+          <button class="btn btn-outline btn-small" onclick="poblarCatalogosDefecto()" title="Añade ramos y compañías estándar del mercado asegurador español"><svg class="ico"><use href="#ico-star"/></svg> Cargar predeterminados</button>
         </div>
       </div>
       <div id="cat-global-msg" class="msg" style="margin-bottom:10px"></div>
@@ -422,19 +466,19 @@
   <!-- Modal: cambio de contraseña desde la app -->
   <div id="modal-cambio-pass" class="modal-overlay hidden">
     <div class="modal-card">
-      <div class="modal-title">🔑 Cambiar contraseña</div>
+      <div class="modal-title"><svg class="ico"><use href="#ico-key"/></svg> Cambiar contraseña</div>
       <div class="input-group">
         <label>Nueva contraseña</label>
         <div class="password-wrapper">
           <input id="modal-new-pass" type="password" autocomplete="new-password" placeholder="Nueva contraseña">
-          <button type="button" class="toggle-pass" onclick="toggleModalPass('modal-new-pass',this)">👁️</button>
+          <button type="button" class="toggle-pass" onclick="toggleModalPass('modal-new-pass',this)"><svg class="ico"><use href="#ico-eye"/></svg></button>
         </div>
       </div>
       <div class="input-group">
         <label>Repetir contraseña</label>
         <div class="password-wrapper">
           <input id="modal-repeat-pass" type="password" autocomplete="new-password" placeholder="Repetir contraseña">
-          <button type="button" class="toggle-pass" onclick="toggleModalPass('modal-repeat-pass',this)">👁️</button>
+          <button type="button" class="toggle-pass" onclick="toggleModalPass('modal-repeat-pass',this)"><svg class="ico"><use href="#ico-eye"/></svg></button>
         </div>
       </div>
       <div class="modal-actions">

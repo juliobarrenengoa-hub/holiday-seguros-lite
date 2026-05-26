@@ -53,6 +53,30 @@ body {
   font-size: 1.15rem;
   letter-spacing: 0.03em;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* Icono SVG inline — hereda color del contexto */
+.ico {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 .app-nav .nav-links {
@@ -572,7 +596,14 @@ body {
 .menu-btn .icon {
   font-size: 2rem;
   margin-bottom: 8px;
-  display: block;
+  display: flex;
+  justify-content: center;
+}
+
+.menu-btn .icon .ico {
+  width: 2rem;
+  height: 2rem;
+  color: var(--primary);
 }
 
 .menu-btn .label {

@@ -860,10 +860,13 @@ table tbody tr.clickable {
 .bar-item .bar-fill {
   display: block;         /* inline <span> no respeta width/height sin esto */
   height: 100%;
-  background: var(--primary);
+  background: var(--primary);   /* azul — unidades (nº pólizas) */
   border-radius: 9px;
   width: 0;               /* punto de partida para la animación de entrada */
   transition: width 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.bar-item .bar-fill--importes {
+  background: #388e3c;          /* verde — importes (€) */
 }
 
 .bar-item .bar-value {

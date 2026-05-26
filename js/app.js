@@ -829,30 +829,29 @@
       _poblarSelectAgentes(res.agentes);
     }
 
-    renderBarChart('chart-ramo',      res.porRamo,           'polizas', utils.formatNumero);
-    renderBarChart('chart-cia',        res.porCompania,       'polizas', utils.formatNumero);
-    renderBarChart('chart-ramo-prima', res.porRamo,           'prima',   utils.formatImporte);
-    renderBarChart('chart-cia-prima',  res.porCompania,       'prima',   utils.formatImporte);
-    renderBarChart('chart-venc-mes',   res.vencimientosPorMes,'polizas', utils.formatNumero);
-    renderBarChart('chart-pol-mes',    res.polizasPorMes,     'polizas', utils.formatNumero);
-    renderBarChart('chart-prima-mes',  res.primasPorMes,      'prima',   utils.formatImporte);
+    renderBarChart('chart-ramo',      res.porRamo,            'polizas', utils.formatNumero,  'unidades');
+    renderBarChart('chart-cia',       res.porCompania,        'polizas', utils.formatNumero,  'unidades');
+    renderBarChart('chart-ramo-prima',res.porRamo,            'prima',   utils.formatImporte, 'importes');
+    renderBarChart('chart-cia-prima', res.porCompania,        'prima',   utils.formatImporte, 'importes');
+    renderBarChart('chart-pol-mes',   res.polizasPorMes,      'polizas', utils.formatNumero,  'unidades');
+    renderBarChart('chart-prima-mes', res.primasPorMes,       'prima',   utils.formatImporte, 'importes');
+    renderBarChart('chart-venc-mes',  res.vencimientosPorMes, 'polizas', utils.formatNumero,  'unidades');
   }
 
-  function renderBarChart(containerId, datos, campo, formatFn) {
+  function renderBarChart(containerId, datos, campo, formatFn, tipo) {
     var el = $(containerId);
     if (!el) return;
     if (!datos || !datos.length) { el.innerHTML = '<p class="status-text">Sin datos</p>'; return; }
 
+    var fillClass = 'bar-fill' + (tipo === 'importes' ? ' bar-fill--importes' : '');
     var max = datos.reduce(function (m, d) { return Math.max(m, Number(d[campo]) || 0); }, 0) || 1;
-    var pcts = [];
     var html = '<ul class="bar-list">';
-    datos.forEach(function (d, i) {
+    datos.forEach(function (d) {
       var val = Number(d[campo]) || 0;
       var pct = Math.max(2, (val / max) * 100);
-      pcts.push(pct);
       html += '<li class="bar-item">'
         + '<span class="bar-label" title="' + escapeHtml(d.label) + '">' + escapeHtml(d.label) + '</span>'
-        + '<span class="bar-track"><span class="bar-fill" data-w="' + pct.toFixed(2) + '"></span></span>'
+        + '<span class="bar-track"><span class="' + fillClass + '" data-w="' + pct.toFixed(2) + '"></span></span>'
         + '<span class="bar-value">' + formatFn(val) + '</span>'
         + '</li>';
     });
